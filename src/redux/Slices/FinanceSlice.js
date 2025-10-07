@@ -71,13 +71,19 @@ const FinanceSlice = createSlice({
   finance: [],  // ✅ renamed for clarity
   expense:[],
   income:[],
+  loading : false,
  
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
       // Employees
+      .addCase(fetchFinanceSummary.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchFinanceSummary.fulfilled, (state, action) => {
+        state.loading = false;
         state.finance = Array.isArray(action.payload)
       ? action.payload
       : [action.payload];

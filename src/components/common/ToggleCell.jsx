@@ -1,44 +1,16 @@
-// import React, { useState } from "react";
-
-// const ToggleCell = ({ text, limit = 30, width = "150px" }) => {
-//   const [expanded, setExpanded] = useState(false);
-
-//   if (!text) return <span>-</span>;
-
-//   const isLong = text.length > limit;
-//   const displayText = expanded ? text : text.slice(0, limit);
-
-//   return (
-//     <div
-//       style={{ width }}
-//       className="whitespace-normal break-words overflow-hidden"
-//     >
-//       {displayText}
-//       {isLong && !expanded && (
-//         <button
-//           onClick={() => setExpanded(true)}
-//           className="text-gray-500 cursor-pointer ml-1"
-//         >
-//           ...
-//         </button>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default ToggleCell;
-
-
 import { ChevronUp } from "lucide-react";
 import React, { useState } from "react";
 
-const ToggleCell = ({ text, limit = 30, width = "150px" }) => {
+const ToggleCell = ({ text, limit = 10, width = "100px" }) => {
   const [expanded, setExpanded] = useState(false);
 
-  if (!text) return <span>-</span>;
+  // Convert anything to string safely
+  const safeText = text !== null && text !== undefined ? String(text) : "";
 
-  const isLong = text.length > limit;
-  const displayText = expanded ? text : text.slice(0, limit);
+  if (!safeText) return <span>-</span>;
+
+  const isLong = safeText.length > limit;
+  const displayText = expanded ? safeText : safeText.slice(0, limit);
 
   return (
     <div
@@ -51,7 +23,7 @@ const ToggleCell = ({ text, limit = 30, width = "150px" }) => {
           onClick={() => setExpanded(!expanded)}
           className="text-gray-500 cursor-pointer ml-1"
         >
-          {expanded ? <ChevronUp size={16} />: "..."}
+          {expanded ? <ChevronUp size={16} /> : "..."}
         </button>
       )}
     </div>
@@ -59,3 +31,5 @@ const ToggleCell = ({ text, limit = 30, width = "150px" }) => {
 };
 
 export default ToggleCell;
+
+

@@ -8,7 +8,7 @@ import { PlusCircle, Search, Shield, ChevronUp } from "lucide-react";
 
 const Finance = () => {
   const dispatch = useDispatch();
-  const { finance = [] } = useSelector((state) => state.finance); // ✅ fallback to []
+  const { finance = [] ,loading} = useSelector((state) => state.finance); // ✅ fallback to []
   const { booking = [] } = useSelector((state) => state.labBooking); // ✅ fallback to []
 
   const [date, setDate] = useState("");
@@ -130,7 +130,7 @@ const Finance = () => {
 
   
   return (
-    <div className="p-6">
+    <div className="p-2">
       <ToastContainer position="top-right" autoClose={3000} />
 
       {/* HEADER */}
@@ -148,13 +148,13 @@ const Finance = () => {
           <div className="flex flex-col gap-2">
             <button
               onClick={() => setShowExpenseForm(true)}
-              className="flex items-center justify-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100"
+              className="flex items-center justify-center gap-1 bg-white text-blue-600  p-[0.6vh] md:px-4 md:py-2 rounded-lg shadow hover:bg-gray-100"
             >
               <PlusCircle size={18} /> Add Expense
             </button>
             <button
               onClick={() => setShowIncomeForm(true)}
-              className="flex items-center justify-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100"
+              className="flex items-center justify-center gap-2 bg-white text-blue-600  p-[0.7vh] md:px-4 md:py-2 rounded-lg shadow hover:bg-gray-100"
             >
               <PlusCircle size={18} /> Add Income
             </button>
@@ -176,6 +176,13 @@ const Finance = () => {
         </div>
       </div>
 
+{loading ? (
+  <div className="flex items-center justify-center h-[400px]">
+    <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5"></span>
+    <span className="ml-2 md:text-2xl text-blue-600">Loading...</span>
+  </div>
+) : (
+  <>
       {/* Date Picker */}
       <div className="mb-4">
         <input
@@ -263,7 +270,11 @@ const Finance = () => {
         ) : (
           <p className="text-gray-500">No data found.</p>
         )}
+        
+
       </div>
+</>
+      )}    
 
       {/* INCOME MODAL */}
       {showIncomeForm && (

@@ -14,8 +14,7 @@ import {
   Trash2,
   Edit,
   PlusCircle,
-  MoreVertical,
-  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -23,7 +22,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default function LabBooking() {
   const dispatch = useDispatch();
 
-  const { booking = [] } = useSelector((state) => state.labBooking);
+  const { booking = [],loading } = useSelector((state) => state.labBooking);
   const { doctors = [], patients = [] } = useSelector(
     (state) => state.appointment
   );
@@ -143,98 +142,107 @@ export default function LabBooking() {
       <ToastContainer position="top-right" autoClose={3000} />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
-        <div className="flex flex-row gap-2 items-center justify-between">
-          <div className="flex gap-2 items-center">
-            <div className="bg-blue-400 rounded-xl border border-blue-300 p-3">
-              <Shield size={32} color="white" />
+      <div className="  bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg  md:px-4 md:py-8 py-4 border-collapse">
+        <div className="flex px-4 flex-row justify-between sm:items-center ">
+          <div className="flex justify-items-center gap-3">
+            <div className="bg-blue-400  flex items-center justify-center rounded-xl border border-blue-300 p-2">
+              <Shield size={24} color="white" />
             </div>
-            <div className="flex flex-col">
-              <h2 className="text-xl md:text-2xl font-bold">Lab Bookings</h2>
-              <p className="text-sm opacity-80">Manage lab test bookings</p>
+            <div>
+              <h1 className="text-xl  sm:text-2xl text-white font-bold">
+                Lab Booking Management
+              </h1>
+              {/* <p className="text-white hidden md:block">Manage system suppliers</p> */}
             </div>
           </div>
-
           <button
-            onClick={() => {
+             onClick={() => {
               resetForm();
               setShowForm(true);
             }}
-            className="flex items-center justify-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100"
+            className="bg-white text-blue-600 px-4 py-2 rounded-md"
           >
-            <PlusCircle size={18} /> New Booking
+            + New Booking
           </button>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center bg-white p-2 rounded-lg shadow w-full md:w-64">
-            <Search size={18} className="text-gray-500" />
+        {/* Search */}
+        <div className="mt-4 px-2">
+          <div className="bg-white rounded-md flex items-center gap-2 px-2 py-2 w-full md:w-[500px]">
+            <Search size={24} color="gray" />
             <input
               type="text"
-              placeholder="Search patient..."
+              placeholder="Search bookings..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 outline-none text-gray-700"
+              className="px-4 py-1 rounded w-full text-black outline-none"
             />
           </div>
         </div>
       </div>
 
-      {/* Total count */}
-      <div className="mb-2 font-semibold text-gray-700">
-        Total Bookings: {booking.length}
+{/* Loading Overlay */}
+{loading ? (
+  <div className="flex items-center justify-center h-[400px]">
+    <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5"></span>
+    <span className="ml-2 md:text-2xl text-blue-600">Loading...</span>
+  </div>
+) : (
+  <>
+    {/* Bookings List */}
+    <div className="bg-white rounded shadow p-4">
+      <div className="text-lg font-semibold border-b pb-2 mb-4">
+        Total Bookings: {filteredBookings.length}
       </div>
 
       {/* Desktop Table */}
-      <div className="overflow-x-auto bg-white rounded-xl shadow hidden md:block">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-white text-left rounded text-sm md:text-base">
-              <th className="p-3">Booking ID</th>
-              <th className="p-3">Patient</th>
-              <th className="p-3">Doctor</th>
-              <th className="p-3">Date</th>
-              <th className="p-3">Status</th>
-              <th className="p-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredBookings.length > 0 ? (
-              filteredBookings.map((b) => (
-                <tr key={b.id} className="hover:bg-gray-50 text-sm md:text-base">
-                  <td className="p-3">{b.id}</td>
-                  <td className="p-3">{patients[b.patient_id]?.name}</td>
-                  <td className="p-3">{doctors[b.doctor_id]?.name || "N/A"}</td>
-                  <td className="p-3">{b.date || "-"}</td>
-                  <td className="p-3">{b.status}</td>
-                  <td className="p-3 flex justify-center gap-2">
-                    <button
-                      onClick={() => {
-                        setEditData(b);
-                        setShowForm(true);
-                      }}
-                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center gap-1"
-                    >
-                      <Edit size={14} /> Update
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(b.id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm flex items-center gap-1"
-                    >
-                      <Trash2 size={14} /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" className="text-center p-4">
-                  No bookings found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="hidden md:block">
+        <div className="grid grid-cols-6 gap-4 px-6 py-3 border-b font-semibold text-gray-700 bg-white rounded-t-md">
+          <div>S No.</div>
+          <div>Patient</div>
+          <div>Doctor</div>
+          <div>Date</div>
+          <div>Status</div>
+          <div className="text-center">Actions</div>
+        </div>
+
+        <div className="flex flex-col py-2 gap-2 mt-2">
+          {filteredBookings.length > 0 ? (
+            filteredBookings.map((b, index) => (
+              <div
+                key={b.id}
+                className="grid grid-cols-6 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
+              >
+                <div>{index + 1}</div>
+                <div>{patients[b.patient_id]?.name}</div>
+                <div>{doctors[b.doctor_id]?.name || "N/A"}</div>
+                <div>{b.date || "-"}</div>
+                <div>{b.status}</div>
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditData(b);
+                      setShowForm(true);
+                    }}
+                    className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    <Edit size={18} /> Update
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(b.id)}
+                    className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    <Trash2 size={18} /> Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="flex justify-center items-center py-6">
+              <p className="text-black">No bookings found.</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Mobile Card View */}
@@ -244,19 +252,21 @@ export default function LabBooking() {
             <div key={b.id} className="border rounded-lg shadow p-4 bg-white">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-semibold">{b.patient?.name}</p>
+                  <p className="font-semibold">{patients[b.patient_id]?.name}</p>
                   <p className="text-gray-600 text-sm">
                     {doctors[b.doctor_id]?.name || "N/A"}
                   </p>
                 </div>
-               <button
-            onClick={() => setExpandedId(expandedId === b.id ? null : b.id)}
-            className={`transform transition-transform duration-300 ${
-              expandedId === b.id ? "rotate-180" : "rotate-0"
-            }`}
-          >
-            <ChevronUp size={20} />
-          </button>
+                <button
+                  onClick={() =>
+                    setExpandedId(expandedId === b.id ? null : b.id)
+                  }
+                  className={`transform transition-transform duration-300 ${
+                    expandedId === b.id ? "rotate-180" : "rotate-0"
+                  }`}
+                >
+                  <ChevronDown size={20} />
+                </button>
               </div>
 
               {expandedId === b.id && (
@@ -295,9 +305,14 @@ export default function LabBooking() {
             </div>
           ))
         ) : (
-          <p className="text-gray-500">No bookings found.</p>
+          <p className="flex items-center text-xl text-black">No bookings found.</p>
         )}
       </div>
+    </div>
+  </>
+)}
+
+     
 
       {/* Add/Edit Modal */}
       {showForm && (

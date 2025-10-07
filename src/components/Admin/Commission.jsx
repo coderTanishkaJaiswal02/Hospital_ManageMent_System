@@ -8,13 +8,14 @@ import {
   updateCommissionStatus,
   fetchDoctors,
 } from "../../redux/Slices/CommissionSlice";
-import { Search, Shield, Trash2, PlusCircle, MoreVertical, Edit, ChevronUp } from "lucide-react";
+import { Search, Shield, Trash2, PlusCircle, MoreVertical, Edit, ChevronUp, ChevronDown } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ToggleCell from "../common/ToggleCell";
 
 export default function Commission() {
   const dispatch = useDispatch();
-  const { commission = [], doctors = {},  } = useSelector(
+  const { commission = [], doctors = {},  loading } = useSelector(
     (state) => state.commission
   );
 
@@ -111,44 +112,48 @@ export default function Commission() {
     
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
-        <div className="flex flex-row gap-2 items-center justify-between">
-          <div className="flex gap-2 items-center">
-            <div className="bg-blue-400 rounded-xl border border-blue-300 p-3">
-              <Shield size={32} color="white" />
+     
+
+        <div className="  bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg  md:px-4 md:py-8 py-4 border-collapse">
+        <div className="flex px-4 flex-row justify-between sm:items-center ">
+          <div className="flex justify-items-center gap-3">
+            <div className="bg-blue-400  flex items-center justify-center rounded-xl border border-blue-300 p-2">
+              <Shield size={24} color="white" />
             </div>
-            <div className="flex flex-col">
-              <h2 className="text-xl md:text-2xl font-bold">Commission</h2>
-              <p className="text-sm opacity-80">Manage doctor commissions</p>
+            <div>
+              <h1 className="text-xl  sm:text-2xl text-white font-bold">
+                Commission Management
+              </h1>
+              {/* <p className="text-white hidden md:block">Manage system suppliers</p> */}
             </div>
           </div>
-
           <button
             onClick={() => {
               resetForm();
               setShowForm(true);
             }}
-            className="flex items-center justify-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100"
+            className="bg-white text-blue-600 px-4 py-2 rounded-md"
           >
-            <PlusCircle size={18} /> New Commission
+            + New Comission
           </button>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center bg-white p-2 rounded-lg shadow w-full md:w-64">
-            <Search size={18} className="text-gray-500" />
+        {/* Search */}
+        <div className="mt-4 px-2">
+          <div className="bg-white rounded-md flex items-center gap-2 px-2 py-2 w-full md:w-[500px]">
+            <Search size={24} color="gray" />
             <input
               type="text"
-              placeholder="Search by doctor..."
+              placeholder="Search by commission..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 outline-none text-gray-700"
+              className="px-4 py-1 rounded w-full text-black outline-none"
             />
           </div>
         </div>
       </div>
 
-      {/* Desktop Table */}
+      {/* Desktop Table
       <div className="overflow-x-auto bg-white rounded-xl shadow hidden md:block">
         <table className="w-full border-collapse">
           <thead>
@@ -221,7 +226,7 @@ export default function Commission() {
         </table>
       </div>
 
-      {/* Mobile Card View */}
+      {/* Mobile Card 
       <div className="md:hidden flex flex-col gap-4">
         {filteredCommission.length > 0 ? (
           filteredCommission.map((c) => (
@@ -290,7 +295,168 @@ export default function Commission() {
         ) : (
           <p className="text-gray-500">No commissions found.</p>
         )}
+      </div> */}
+
+      {/* Loading Overlay */}
+{loading ? (
+  <div className="flex items-center justify-center h-[400px]">
+    <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5"></span>
+    <span className="ml-2 md:text-2xl text-blue-600">Loading...</span>
+  </div>
+) : (
+  <>
+    {/* Commission List */}
+    <div className="bg-white rounded shadow p-4">
+      <div className="text-lg font-semibold border-b pb-2 mb-4">
+        Total Commissions: {filteredCommission.length}
       </div>
+
+      {/* Desktop Table */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-8 gap-4 px-6 py-3 border-b font-semibold text-gray-700 bg-white rounded-t-md">
+          <div>S.No</div>
+          <div>Doctor</div>
+          <div>Amount</div>
+          <div>Source Type</div>
+          <div>Date</div>
+          <div>Status</div>
+          <div>Update Status</div>
+          <div className="text-center">Actions</div>
+        </div>
+
+        <div className="flex flex-col py-6 gap-2 mt-2">
+          {filteredCommission.length > 0 ? (
+            filteredCommission.map((c, index) => (
+              <div
+                key={c.id}
+                className="grid grid-cols-8 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
+              >
+                <div> <ToggleCell text={index+1} /></div>
+                <div> <ToggleCell text={doctors[c.doctor_id]?.name} /></div>
+                <div> <ToggleCell text={`${c.amount} ₹`} /></div>
+                <div> <ToggleCell text={c.source_type} /></div>
+                <div> <ToggleCell text={c.date} /></div>
+                <div> <ToggleCell text={c.status} /></div>
+                <div>
+                  <select
+                    value={String(c.status ?? "pending")}
+                    onChange={(e) => handleStatusUpdate(c.id, e.target.value)}
+                    className="border p-1 rounded"
+                  >
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditData(c);
+                      setFormData(c);
+                      setShowForm(true);
+                    }}
+                    className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    <Edit size={16} /> Update
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(c.id)}
+                    className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    <Trash2 size={16} /> Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="flex justify-center items-center">
+              <p className="text-black">No commissions found.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden flex flex-col gap-4">
+        {filteredCommission.length > 0 ? (
+          filteredCommission.map((c, index) => (
+            <div key={c.id} className="border rounded-lg shadow p-4 bg-white">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold">{doctors[c.doctor_id]?.name}</p>
+                  <p className="text-gray-600 text-sm">{c.amount} ₹</p>
+                </div>
+                <button
+                  onClick={() =>
+                    setExpandedId(expandedId === c.id ? null : c.id)
+                  }
+                  className={`transform transition-transform duration-300 ${
+                    expandedId === c.id ? "rotate-180" : "rotate-0"
+                  }`}
+                >
+                  <ChevronDown size={20} />
+                </button>
+              </div>
+
+              {expandedId === c.id && (
+                <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
+                  <p>
+                    <span className="font-semibold">Source:</span> {c.source_type} ({c.source_id})
+                  </p>
+                  <p>
+                    <span className="font-semibold">Date:</span> {c.date}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Status:</span>{" "}
+                    <select
+                      value={String(c.status ?? "pending")}
+                      onChange={(e) =>
+                        handleStatusUpdate(c.id, e.target.value)
+                      }
+                      className="border p-1 rounded"
+                    >
+                      {STATUS_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </p>
+
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => {
+                        setEditData(c);
+                        setFormData(c);
+                        setShowForm(true);
+                      }}
+                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                    >
+                      <Edit size={16} /> Update
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(c.id)}
+                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      <Trash2 size={16} /> Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="flex items-center text-xl text-black">
+            No commissions found.
+          </p>
+        )}
+      </div>
+    </div>
+  </>
+)}
+
 
       {/* Add/Edit Commission Modal */}
       {showForm && (

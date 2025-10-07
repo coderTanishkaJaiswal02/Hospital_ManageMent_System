@@ -50,7 +50,6 @@ const Sidebar = ({ activeItem, handleItemClick, className = "" }) => {
     { id: "brands", label: "Brands", icon: CandlestickChart, section: "user" }, // Brands icon
     { id: "commission", label: "Commission", icon: CreditCard, section: "user" }, // Commission icon
     { id: "commission-settings", label: "Commission Settings", icon: ShieldMinus, section: "user" }, // Commission Settings icon
-    { id: "create-user", label: "Create User", icon: UserPlus, section: "user" }, // Create User icon
     { id: "doctor", label: "Doctor", icon: Stethoscope, section: "user" }, // Doctor icon
     { id: "dr-availabilities", label: "Dr Availabilities", icon: Users, section: "user" }, // Dr Availabilities icon
     { id: "finance", label: "Finance", icon: Landmark, section: "user" }, // Finance icon

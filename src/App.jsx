@@ -3,7 +3,6 @@ import { Route, Routes } from "react-router-dom";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoutes from "./Routes/ProtectedRoutes";
-import UserDashboard from "./pages/UserDashboard";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

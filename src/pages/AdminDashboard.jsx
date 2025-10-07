@@ -65,7 +65,7 @@ const AdminDashboard = () => {
         return <CommissionSettings />;
       case "doctor":
         return <Doctor />;
-      case "dr-availablities":
+      case "dr-availabilities":
         return <DrAvailablities />;
       case "finance":
         return <Finance />;

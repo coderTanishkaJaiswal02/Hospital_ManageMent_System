@@ -15,9 +15,11 @@ import {
   PlusCircle,
   ChevronUp,
   Shield,
+  ChevronDown,
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ToggleCell from "../common/ToggleCell";
 
 export default function DoctorUI() {
   const dispatch = useDispatch();
@@ -118,20 +120,11 @@ export default function DoctorUI() {
   }, [editData]);
 
   return (
-    <div className="p-4 md:px-2 bg-gray-100 min-h-screen relative">
+    <div className="p-2 md:px-2 bg-gray-100 min-h-screen relative">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Loading Overlay */}
-      {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40">
-          <p className="text-white text-xl bg-gray-700 px-6 py-4 rounded">
-            Loading...
-          </p>
-        </div>
-      )}
-
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
+      {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
         <div className="flex flex-row gap-2 items-center justify-between">
           <div className="flex gap-2 items-center">
             <div className="bg-blue-400 rounded-xl border border-blue-300 p-3">
@@ -168,14 +161,55 @@ export default function DoctorUI() {
             />
           </div>
         </div>
+      </div> */}
+
+
+       <div className="  bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg  md:px-4 md:py-8 py-4 border-collapse">
+        <div className="flex px-4 flex-row justify-between sm:items-center ">
+          <div className="flex justify-items-center gap-3">
+            <div className="bg-blue-400  flex items-center justify-center rounded-xl border border-blue-300 p-2">
+              <Shield size={24} color="white" />
+            </div>
+            <div>
+              <h1 className="text-xl  sm:text-2xl text-white font-bold">
+                Doctor Management
+              </h1>
+              {/* <p className="text-white hidden md:block">Manage system suppliers</p> */}
+            </div>
+          </div>
+          <button
+             onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+            className="bg-white text-blue-600 px-4 py-2 rounded-md"
+          >
+            + New Doctor
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="mt-4 px-2">
+          <div className="bg-white rounded-md flex items-center gap-2 px-2 py-2 w-full md:w-[500px]">
+            <Search size={24} color="gray" />
+            <input
+               type="text"
+              placeholder="Search doctors..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            
+              className="px-4 py-1 rounded w-full text-black outline-none"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Total count */}
+      {/* Total count
       <div className="mb-2 font-semibold text-gray-700">
         Total Doctors: {doctor.length}
       </div>
 
-      {/* Desktop Table */}
+      {/* Desktop Table 
       <div className="overflow-x-auto bg-white rounded-xl shadow hidden md:block">
         <table className="w-full border-collapse">
           <thead>
@@ -229,7 +263,7 @@ export default function DoctorUI() {
         </table>
       </div>
 
-      {/* Mobile Card View */}
+      {/* Mobile Card View 
       <div className="md:hidden flex flex-col gap-4">
         {filteredDoctors.length > 0 ? (
           filteredDoctors.map((doc) => (
@@ -280,7 +314,142 @@ export default function DoctorUI() {
         ) : (
           <p className="text-gray-500">No doctors found.</p>
         )}
+      </div> */}
+
+      {loading ? (
+  <div className="flex items-center justify-center h-[400px]">
+    <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5"></span>
+    <span className="ml-2 md:text-2xl text-blue-600">Loading...</span>
+  </div>
+) : (
+  <>
+    {/* Doctor List */}
+    <div className="bg-white rounded shadow p-4">
+      <div className="text-lg font-semibold border-b pb-2 mb-4">
+        Total Doctors: {filteredDoctors.length}
       </div>
+
+      {/* Desktop Table */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-6 gap-4 px-6 py-3 border-b font-semibold text-gray-700 bg-white rounded-t-md">
+          <div>S.No</div>
+          <div>Name</div>
+          <div>Specialization</div>
+          <div>Qualification</div>
+          <div>Experience</div>
+          <div className="text-center">Actions</div>
+        </div>
+
+        <div className="flex flex-col py-6 gap-2 mt-2">
+          {filteredDoctors.length > 0 ? (
+            filteredDoctors.map((doc, index) => (
+              <div
+                key={doc.id}
+                className="grid grid-cols-6 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
+              >
+                <div>{index + 1}</div>
+                <div>
+                  <ToggleCell text={doc.name} limit={15} />
+                </div>
+                <div>
+                  <ToggleCell text={doc.specialization} limit={15} />
+                </div>
+                <div>
+                  <ToggleCell text={qualifications[doc.qualification_id]?.degree} limit={15} />
+                </div>
+                <div>
+                  <ToggleCell text={doc.experience} limit={10} />
+                </div>
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditData(doc);
+                      setShowForm(true);
+                    }}
+                    className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    <Edit size={16} /> Update
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(doc.id)}
+                    className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    <Trash2 size={16} /> Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="flex justify-center items-center">
+              <p className="text-black">No doctors found.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden flex flex-col gap-4">
+        {filteredDoctors.length > 0 ? (
+          filteredDoctors.map((doc, index) => (
+            <div key={doc.id} className="border rounded-lg shadow p-4 bg-white">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold">{doc.name}</p>
+                  <p className="text-gray-600 text-sm">{doc.specialization}</p>
+                </div>
+                <button
+                  onClick={() =>
+                    setExpandedId(expandedId === doc.id ? null : doc.id)
+                  }
+                  className={`transform transition-transform duration-300 ${
+                    expandedId === doc.id ? "rotate-180" : "rotate-0"
+                  }`}
+                >
+                  <ChevronDown size={20} />
+                </button>
+              </div>
+
+              {expandedId === doc.id && (
+                <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
+                  <p>
+                    <span className="font-semibold">Qualification: </span>
+                    {qualifications[doc.qualification_id]?.degree}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Experience: </span>
+                    {doc.experience}
+                  </p>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => {
+                        setEditData(doc);
+                        setShowForm(true);
+                      }}
+                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                    >
+                      <Edit size={16} /> Update
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(doc.id)}
+                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      <Trash2 size={16} /> Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="flex items-center text-xl text-black">
+            No doctors found.
+          </p>
+        )}
+      </div>
+    </div>
+  </>
+)}
+
 
       {/* Add/Edit Modal */}
       {showForm && (

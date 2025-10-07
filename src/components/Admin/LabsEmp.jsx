@@ -16,11 +16,12 @@ import {
   Trash2,
   Edit,
   PlusCircle,
-  MoreVertical,
-  ChevronUp,
+  ChevronDown,
+  Users,
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ToggleCell from "../common/ToggleCell";
 
 export default function LabsEmp() {
   const dispatch = useDispatch();
@@ -52,18 +53,27 @@ export default function LabsEmp() {
   }, [dispatch]);
 
  
-  const filteredEmployees = employees.filter((emp) => {
-    const userName = users[emp.user_id]?.name || "";
-    const addressName = emp.address || "";
-     const  experienceName = emp. experience || "";
-      const   labName =labs[ emp. lab_id]?.name || "";
-  
-    // combine all searchable fields
-    const combined = `${userName} ${experienceName} ${addressName} ${ labName}`.toLowerCase();
-  
-    return combined.includes(search.toLowerCase());
-  });
 
+
+  console.log("UI",employees[0]);
+
+const filteredEmployees = employees.filter((emp) => {
+  const userName = emp.user?.name?.toLowerCase() || "";
+  const addressName = emp.address?.toLowerCase() || "";
+  const experienceName = emp.experience?.toLowerCase() || "";
+  const labName = emp.lab?.name?.toLowerCase() || "";
+
+  // your searchText should also be lowercase
+  return (
+    userName.includes(search.toLowerCase()) ||
+    addressName.includes(search.toLowerCase()) ||
+    experienceName.includes(search.toLowerCase()) ||
+    labName.includes(search.toLowerCase())
+  );
+});
+
+
+  
   const handleDelete = async (id) => {
     try {
       await dispatch(deleteEmployee(id)).unwrap();
@@ -148,154 +158,144 @@ export default function LabsEmp() {
     <div className="p-4 md:px-2 bg-gray-100 min-h-screen relative">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {/* Loading Overlay */}
-      {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40">
-          <p className="text-white text-xl bg-gray-700 px-6 py-4 rounded">
-            Loading...
-          </p>
-        </div>
-      )}
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
-        <div className="flex flex-row gap-2 items-center justify-between">
-          <div className="flex gap-2 items-center">
-            <div className="bg-blue-400 rounded-xl border border-blue-300 p-3">
-              <Shield size={32} color="white" />
+     
+ <div className="  bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg  md:px-4 md:py-8 py-4 border-collapse">
+        <div className="flex px-4 flex-row justify-between sm:items-center ">
+          <div className="flex justify-items-center gap-3">
+            <div className="bg-blue-400  flex items-center justify-center rounded-xl border border-blue-300 p-2">
+              <Users size={24} color="white" />
             </div>
-            <div className="flex flex-col">
-              <h2 className="text-xl md:text-2xl font-bold">
+            <div>
+              <h1 className="text-xl  sm:text-2xl text-white font-bold">
                Lab Employee Management
-              </h2>
-              <p className="text-sm opacity-80">Manage system employees</p>
+              </h1>
+              {/* <p className="text-white hidden md:block">Manage system suppliers</p> */}
             </div>
           </div>
-
           <button
             onClick={() => {
               resetForm();
               setShowForm(true);
             }}
-            className="flex items-center justify-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100"
+            className="bg-white text-blue-600 px-4 py-2 rounded-md"
           >
-            <PlusCircle size={18} /> New Employee
+            + New Employee
           </button>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center bg-white p-2 rounded-lg shadow w-full md:w-64">
-            <Search size={18} className="text-gray-500" />
+        {/* Search */}
+        <div className="mt-4 px-2">
+          <div className="bg-white rounded-md flex items-center gap-2 px-2 py-2 w-full md:w-[500px]">
+            <Search size={24} color="gray" />
             <input
               type="text"
               placeholder="Search employees..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1 outline-none text-gray-700"
-            />
+              />
           </div>
         </div>
       </div>
 
-      {/* Total count */}
-      <div className="mb-2 font-semibold text-gray-700">
+
+      {/* Loading Overlay */}
+{loading ? (
+  <div className="flex items-center justify-center h-[400px]">
+    <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5"></span>
+    <span className="ml-2 md:text-2xl text-blue-600">Loading...</span>
+  </div>
+) : (
+  <>
+    {/* Employee List */}
+    <div className="bg-white rounded shadow p-4">
+      <div className="text-lg font-semibold border-b pb-2 mb-4">
         Total Employees: {employees.length}
       </div>
 
-      {/* Desktop Table */}
-      <div className="overflow-x-auto bg-white rounded-xl shadow hidden md:block">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-white text-left rounded text-sm md:text-base">
-              <th className="p-3">Emp ID</th>
-              <th className="p-3">Name</th>
-              <th className="p-3">Age</th>
-              <th className="p-3">Qualification</th>
-              <th className="p-3">Experience</th>
-              <th className="p-3">Joining Date</th>
-              <th className="p-3">Address</th>
-              <th className="p-3">Lab</th>
-              <th className="p-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredEmployees.length > 0 ? (
-              filteredEmployees.map((emp) => (
-                <tr
-                  key={emp.id}
-                  className="hover:bg-gray-50 text-sm md:text-base"
-                >
-                  <td className="p-3">{emp.employee_id}</td>
-                  <td className="p-3">{users[emp.user_id]?.name}</td>
-                  <td className="p-3">{emp.age}</td>
-                  <td className="p-3">
-                    {qualifications[emp.qualification_id]?.degree}
-                  </td>
-                  <td className="p-3">{emp.experience}</td>
-                  <td className="p-3">{emp.joining_date}</td>
-                  <td className="p-3">{emp.address}</td>
-                  <td className="p-3">{labs[emp.lab_id]?.name}</td>
-                  <td className="p-3 flex justify-center gap-2">
-                    <button
-                      onClick={() => {
-                        setEditData(emp);
-                        setShowForm(true);
-                      }}
-                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center gap-1"
-                    >
-                      <Edit size={14} /> Update
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(emp.id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm flex items-center gap-1"
-                    >
-                      <Trash2 size={14} /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="9" className="text-center p-4">
-                  No employees found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      {/* Desktop Version */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-9 gap-4 px-6 py-3 border-b font-semibold text-gray-700 bg-white rounded-t-md">
+          <div>S.No</div>
+          <div>Name</div>
+          <div>Age</div>
+          <div>Qualification</div>
+          <div>Experience</div>
+          <div>Joining Date</div>
+          <div>Address</div>
+          <div>Lab</div>
+          <div className="text-center">Actions</div>
+        </div>
+
+        <div className="flex flex-col py-6 gap-2 mt-2">
+          {filteredEmployees.length > 0 ? (
+            filteredEmployees.map((emp, index) => (
+              <div
+                key={emp.id}
+                className="grid grid-cols-9 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
+              >
+               
+                <div><ToggleCell text={index + 1} limit={10} /></div>
+                <div><ToggleCell text={users[emp.user_id]?.name} limit={10} /></div>
+                <div><ToggleCell text={emp.age}  limit={10}/></div>
+                <div><ToggleCell text={qualifications[emp.qualification_id]?.degree} limit={10}/></div>
+                <div><ToggleCell text={emp.experience} limit={10} /></div>
+                <div><ToggleCell text={emp.joining_date} limit={10} /></div>
+                <div><ToggleCell text={emp.address} limit={10} /></div>
+                <div><ToggleCell text={labs[emp.lab_id]?.name} limit={10} /></div>
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditData(emp);
+                      setShowForm(true);
+                    }}
+                    className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    <Edit size={18} /> Update
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(emp.id)}
+                    className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    <Trash2 size={18} /> Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="flex justify-center items-center">
+              <p className="text-black">No employees found.</p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Mobile Card View */}
+      {/* Mobile Version */}
       <div className="md:hidden flex flex-col gap-4">
         {filteredEmployees.length > 0 ? (
-          filteredEmployees.map((emp) => (
-            <div
-              key={emp.id}
-              className="border rounded-lg shadow p-4 bg-white"
-            >
+          filteredEmployees.map((emp, index) => (
+            <div key={emp.id} className="border rounded-lg shadow p-4 bg-white">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-semibold">{users[emp.user_id]?.name}</p>
-                  <p className="text-gray-600 text-sm">
-                    {labs[emp.lab_id]?.name}
-                  </p>
+                  <p className="text-gray-600 text-sm">{labs[emp.lab_id]?.name}</p>
                 </div>
-                  <button
-                  onClick={() => setExpandedId(expandedId === emp.id ? null : emp.id)}
+                <button
+                  onClick={() =>
+                    setExpandedId(expandedId === emp.id ? null : emp.id)
+                  }
                   className={`transform transition-transform duration-300 ${
-                  expandedId === emp.id ? "rotate-180" : "rotate-0"
+                    expandedId === emp.id ? "rotate-180" : "rotate-0"
                   }`}
-                  >
-                  <ChevronUp size={20} />
-                  </button>
-                  </div>
+                >
+                  <ChevronDown size={20} />
+                </button>
+              </div>
 
               {expandedId === emp.id && (
                 <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
-                  <p>
-                    <span className="font-semibold">Emp ID: </span>
-                    {emp.employee_id}
-                  </p>
                   <p>
                     <span className="font-semibold">Age: </span>
                     {emp.age}
@@ -338,9 +338,13 @@ export default function LabsEmp() {
             </div>
           ))
         ) : (
-          <p className="text-gray-500">No employees found.</p>
+          <p className="flex items-center text-xl text-black">No employees found.</p>
         )}
       </div>
+    </div>
+  </>
+)}
+
 
       {/* Add/Edit Modal */}
       {showForm && (

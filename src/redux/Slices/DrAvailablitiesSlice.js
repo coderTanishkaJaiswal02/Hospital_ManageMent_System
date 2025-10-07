@@ -100,8 +100,13 @@ const DrAvailablitiesSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Employees
+      .addCase(fetchDrAvailablities.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchDrAvailablities.fulfilled, (state, action) => {
         state.DrAvailablities = action.payload || [];
+        state.loading = false;
       })
       .addCase(insertDrAvailablities.fulfilled, (state, action) => {
         state.DrAvailablities.push(action.payload);

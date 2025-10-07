@@ -24,6 +24,7 @@ export const fetchEmployees = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await empApi.get("/lab-employees");
+      console.log("Fetched Employees:", res.data.data);
       return res.data.data; 
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
@@ -37,6 +38,8 @@ export const insertEmployee = createAsyncThunk(
   async (payload, { rejectWithValue }) => {
     try {
       const res = await empApi.post("/lab-employees", payload);
+    
+      
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
@@ -91,7 +94,7 @@ export const fetchQualificationById = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const res = await empApi.get(`/qualifications`);
-      console.log(res.data.data);
+      console.log("Qualifications",res.data.data);
       
       return res.data.data;
     } catch (err) {
@@ -128,8 +131,18 @@ const LabsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Employees
+      .addCase(fetchEmployees.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchEmployees.fulfilled, (state, action) => {
+        state.loading = false;
         state.employees = action.payload || [];
+      })
+
+      .addCase(fetchEmployees.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch employees";
       })
       .addCase(insertEmployee.fulfilled, (state, action) => {
         state.employees.push(action.payload);

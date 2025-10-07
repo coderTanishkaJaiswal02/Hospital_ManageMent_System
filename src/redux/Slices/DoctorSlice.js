@@ -121,10 +121,20 @@ const doctorSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Employees
+
+      .addCase(fetchDoctor.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(fetchDoctor.fulfilled, (state, action) => {
+        state.loading = false;
      const data=   state.doctor = action.payload || [];
         console.log("Stste",data);
         
+      })
+      .addCase(fetchDoctor.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch doctors";
       })
             .addCase(insertDoctor.fulfilled, (state, action) => {
         if (action.payload?.data) {

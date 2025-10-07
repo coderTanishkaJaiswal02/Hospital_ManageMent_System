@@ -14,13 +14,15 @@ import {
   PlusCircle,
   MoreVertical,
   ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ToggleCell from "../common/ToggleCell";
 
 export default function LabsTests() {
   const dispatch = useDispatch();
-  const { labsTestsData = [],  } = useSelector(
+  const { labsTestsData = [],  loading } = useSelector(
     (state) => state.labsTests || {}
   );
 
@@ -146,7 +148,7 @@ export default function LabsTests() {
 
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
+      {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
         <div className="flex flex-row gap-2 items-center justify-between">
           <div className="flex gap-2 items-center">
             <div className="bg-blue-400 rounded-xl border border-blue-300 p-3">
@@ -183,14 +185,56 @@ export default function LabsTests() {
             />
           </div>
         </div>
+      </div> */}
+     
+     
+      {/* Header */}
+      <div className="  bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg  md:px-4 md:py-8 py-4 border-collapse">
+        <div className="flex px-4 flex-row justify-between sm:items-center ">
+          <div className="flex justify-items-center gap-3">
+            <div className="bg-blue-400  flex items-center justify-center rounded-xl border border-blue-300 p-2">
+              <Shield size={24} color="white" />
+            </div>
+            <div>
+              <h1 className="text-xl  sm:text-2xl text-white font-bold">
+               Lab Test Management
+              </h1>
+              {/* <p className="text-white hidden md:block">Manage system suppliers</p> */}
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+            className="bg-white text-blue-600 px-4 py-2 rounded-md"
+          >
+            + New Lab Test
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="mt-4 px-2">
+          <div className="bg-white rounded-md flex items-center gap-2 px-2 py-2 w-full md:w-[500px]">
+            <Search size={24} color="gray" />
+           <input
+              type="text"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="px-4 py-1 rounded w-full text-black outline-none"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Total count */}
+
+      {/* Total count 
       <div className="mb-2 font-semibold text-gray-700">
         Total Lab Tests: {labsTestsData.length}
       </div>
 
-      {/* Table View */}
+      {/* Table View
       <div className="overflow-x-auto bg-white rounded-xl shadow hidden md:block">
         <table className="w-full border-collapse">
           <thead>
@@ -250,7 +294,7 @@ export default function LabsTests() {
         </table>
       </div>
 
-      {/* Mobile Card View */}
+      {/* Mobile Card View
       <div className="md:hidden flex flex-col gap-4">
         {filteredLabsTests.length > 0 ? (
           filteredLabsTests.map((emp) => (
@@ -317,146 +361,284 @@ export default function LabsTests() {
           <p className="text-gray-500">No lab tests found.</p>
         )}
       </div>
+*/}
 
-      {/* Add/Edit Modal */}
-      {showForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl">
-            <h3 className="text-lg font-semibold mb-4">
-              {editData ? "Edit Lab Test" : "Add Lab Test"}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Name"
-                className="w-full border p-2 rounded"
-                required
-              />
-              <input
-                type="text"
-                value={formData.test_code}
-                onChange={(e) => setFormData({ ...formData, test_code: e.target.value })}
-                placeholder="Test Code"
-                className="w-full border p-2 rounded"
-                required
-              />
-              <input
-                type="text"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Description"
-                className="w-full border p-2 rounded"
-                required
-              />
 
-              <select
-                value={formData.category_id}
-                onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                className="border p-2 rounded w-full"
-                required
+
+{/* Loading Overlay */}
+{loading ? (
+  <div className="flex items-center justify-center h-[400px]">
+    <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5"></span>
+    <span className="ml-2 md:text-2xl text-blue-600">Loading...</span>
+  </div>
+) : (
+  <>
+    {/* Lab Tests List */}
+    <div className="bg-white rounded shadow p-4">
+      <div className="text-lg font-semibold border-b pb-2 mb-4">
+        Total Lab Tests: {filteredLabsTests.length}
+      </div>
+
+      {/* Desktop version */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-10 gap-4 px-6 py-3 border-b font-semibold text-gray-700 bg-white rounded-t-md">
+          <div>S.No</div>
+          <div>Name</div>
+          <div>Description</div>
+          <div>Test Code</div>
+          <div>Category</div>
+          <div>Price</div>
+          <div>Sample Type</div>
+          <div>Unit</div>
+          <div className="text-center">Actions</div>
+        </div>
+
+        <div className="flex flex-col py-6 gap-2 mt-2">
+          {filteredLabsTests.length > 0 ? (
+            filteredLabsTests.map((lab, index) => (
+              <div
+                key={lab.id}
+                className="grid grid-cols-10 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
               >
-                <option value="">Select Category</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+                <div>{index + 1}</div>
+                <div><ToggleCell text={lab.name}  /></div>
+                <div><ToggleCell text={lab.description}  /></div>
+                <div><ToggleCell text={lab.test_code}  /></div>
+                <div><ToggleCell text={lab.category?.name} /></div>
+                <div><ToggleCell text={lab.price} /></div>
+                <div><ToggleCell text={lab.sample_type?.name} /></div>
+                <div><ToggleCell text={lab.unit?.name} /> </div>
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditData(lab);
+                      setShowForm(true);
+                    }}
+                    className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    <Edit size={16} /> Update
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(lab.id)}
+                    className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    <Trash2 size={16} /> Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="flex justify-center items-center">
+              <p className="text-black">No lab tests found.</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-              <select
-                value={formData.sample_type_id}
-                onChange={(e) => setFormData({ ...formData, sample_type_id: e.target.value })}
-                className="border p-2 rounded w-full"
-                required
-              >
-                <option value="">Select Sample Type</option>
-                {sampleTypes.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-
-              <select
-                value={formData.unit_id}
-                onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}
-                className="border p-2 rounded w-full"
-                required
-              >
-                <option value="">Select Unit</option>
-                {units.map(u => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
-                ))}
-              </select>
-
-              <select
-                value={formData.clinic_id}
-                onChange={(e) => setFormData({ ...formData, clinic_id: e.target.value })}
-                className="border p-2 rounded w-full"
-                required
-              >
-                <option value="">Select Clinic</option>
-                {clinics.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-
-              <input
-                type="text"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="Price"
-                className="w-full border p-2 rounded"
-                required
-              />
-
-              <input
-                type="text"
-                value={formData.sub_category_id}
-                onChange={(e) => setFormData({ ...formData, sub_category_id: e.target.value })}
-                placeholder="Sub Category ID (optional)"
-                className="w-full border p-2 rounded"
-              />
-
-              <input
-                type="text"
-                value={formData.normal_range_male}
-                onChange={(e) => setFormData({ ...formData, normal_range_male: e.target.value })}
-                placeholder="Normal Range Male"
-                className="w-full border p-2 rounded"
-              />
-              <input
-                type="text"
-                value={formData.normal_range_female}
-                onChange={(e) => setFormData({ ...formData, normal_range_female: e.target.value })}
-                placeholder="Normal Range Female"
-                className="w-full border p-2 rounded"
-              />
-              <input
-                type="text"
-                value={formData.method}
-                onChange={(e) => setFormData({ ...formData, method: e.target.value })}
-                placeholder="Method"
-                className="w-full border p-2 rounded"
-              />
-
-              <div className="flex justify-end gap-2 pt-2">
+      {/* Mobile View */}
+      <div className="md:hidden flex flex-col gap-4">
+        {filteredLabsTests.length > 0 ? (
+          filteredLabsTests.map((lab, index) => (
+            <div key={lab.id} className="border rounded-lg shadow p-4 bg-white">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold">{lab.name}</p>
+                  <p className="text-gray-600 text-sm">{lab.description}</p>
+                </div>
                 <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2 border rounded-xl"
+                  onClick={() => setExpandedId(expandedId === lab.id ? null : lab.id)}
+                  className={`transform transition-transform duration-300 ${
+                    expandedId === lab.id ? "rotate-180" : "rotate-0"
+                  }`}
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700"
-                >
-                  {editData ? "Update" : "Save"}
+                  <ChevronDown size={20} />
                 </button>
               </div>
-            </form>
-          </div>
+
+              {expandedId === lab.id && (
+                <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
+                  <p><span className="font-semibold">ID:</span> {lab.id}</p>
+                  <p><span className="font-semibold">Test Code:</span> {lab.test_code}</p>
+                  <p><span className="font-semibold">Category:</span> {lab.category?.name}</p>
+                  <p><span className="font-semibold">Price:</span> {lab.price}</p>
+                  <p><span className="font-semibold">Sample Type:</span> {lab.sample_type?.name}</p>
+                  <p><span className="font-semibold">Unit:</span> {lab.unit?.name}</p>
+                  <p><span className="font-semibold">Clinic:</span> {lab.clinic?.name}</p>
+
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => {
+                        setEditData(lab);
+                        setShowForm(true);
+                      }}
+                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                    >
+                      <Edit size={16} /> Update
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(lab.id)}
+                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      <Trash2 size={16} /> Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="flex items-center text-xl text-black">No lab tests found.</p>
+        )}
+      </div>
+    </div>
+  </>
+)}
+
+   {/* Add/Edit Modal */}
+
+   {/* Add/Edit Lab Test Modal */}
+{showForm && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+    <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl max-h-[90vh] overflow-y-auto">
+      <h3 className="text-lg font-semibold mb-4">
+        {editData ? "Edit Lab Test" : "Add Lab Test"}
+      </h3>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <input
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder="Name"
+          className="w-full border p-2 rounded"
+          required
+        />
+        <input
+          type="text"
+          value={formData.test_code}
+          onChange={(e) => setFormData({ ...formData, test_code: e.target.value })}
+          placeholder="Test Code"
+          className="w-full border p-2 rounded"
+          required
+        />
+        <input
+          type="text"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          placeholder="Description"
+          className="w-full border p-2 rounded"
+          required
+        />
+
+        <select
+          value={formData.category_id}
+          onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+          className="border p-2 rounded w-full"
+          required
+        >
+          <option value="">Select Category</option>
+          {categories.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+
+        <select
+          value={formData.sample_type_id}
+          onChange={(e) => setFormData({ ...formData, sample_type_id: e.target.value })}
+          className="border p-2 rounded w-full"
+          required
+        >
+          <option value="">Select Sample Type</option>
+          {sampleTypes.map(s => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+
+        <select
+          value={formData.unit_id}
+          onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}
+          className="border p-2 rounded w-full"
+          required
+        >
+          <option value="">Select Unit</option>
+          {units.map(u => (
+            <option key={u.id} value={u.id}>{u.name}</option>
+          ))}
+        </select>
+
+        <select
+          value={formData.clinic_id}
+          onChange={(e) => setFormData({ ...formData, clinic_id: e.target.value })}
+          className="border p-2 rounded w-full"
+          required
+        >
+          <option value="">Select Clinic</option>
+          {clinics.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+
+        <input
+          type="text"
+          value={formData.price}
+          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+          placeholder="Price"
+          className="w-full border p-2 rounded"
+          required
+        />
+
+        <input
+          type="text"
+          value={formData.sub_category_id}
+          onChange={(e) => setFormData({ ...formData, sub_category_id: e.target.value })}
+          placeholder="Sub Category ID (optional)"
+          className="w-full border p-2 rounded"
+        />
+
+        <input
+          type="text"
+          value={formData.normal_range_male}
+          onChange={(e) => setFormData({ ...formData, normal_range_male: e.target.value })}
+          placeholder="Normal Range Male"
+          className="w-full border p-2 rounded"
+        />
+
+        <input
+          type="text"
+          value={formData.normal_range_female}
+          onChange={(e) => setFormData({ ...formData, normal_range_female: e.target.value })}
+          placeholder="Normal Range Female"
+          className="w-full border p-2 rounded"
+        />
+
+        <input
+          type="text"
+          value={formData.method}
+          onChange={(e) => setFormData({ ...formData, method: e.target.value })}
+          placeholder="Method"
+          className="w-full border p-2 rounded"
+        />
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button
+            type="button"
+            onClick={() => setShowForm(false)}
+            className="px-4 py-2 border rounded-xl"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700"
+          >
+            {editData ? "Update" : "Save"}
+          </button>
         </div>
-      )}
+      </form>
+    </div>
+  </div>
+)}
+
+
 
       {/* Delete Modal */}
       {deleteId && (
