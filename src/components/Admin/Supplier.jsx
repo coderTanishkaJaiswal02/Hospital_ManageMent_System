@@ -14,6 +14,7 @@ import { Trash2, Search,  Shield, ChevronUp, Edit, ChevronDown, Ambulance} from 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ToggleCell from "../common/ToggleCell";
+import Pagination from "../common/Pagination";
 
 const Supplier = () => {
   const dispatch = useDispatch();
@@ -101,6 +102,19 @@ const Supplier = () => {
       })
     : [];
 
+    // Pagination logic
+        const [searching, setSearching] = useState("");
+        const [page, setPage] = useState(1);
+        const limit =10;
+        const totalPages = Math.ceil(filteredData.length / limit);
+        const startIndex = (page - 1) * limit;
+        const currentData =filteredData.slice(startIndex, startIndex + limit);
+      
+        useEffect(() => {
+          setPage(1);
+        }, [searching]);
+    
+
     
 
   return (
@@ -149,7 +163,7 @@ const Supplier = () => {
         {/* Loading Overlay */}
       {loading ? (
         <div className="flex items-center justify-center h-[400px]">
-          <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5"></span>
+          <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5 "></span>
           <span className="ml-2 md:text-2xl text-blue-600">Loading...</span>
         </div>
 
@@ -158,7 +172,7 @@ const Supplier = () => {
   {/* Supplier List */}
       <div className="bg-white rounded  rounded-t-none shadow p-4">
         <div className="text-lg font-semibold border-b pb-2 mb-4">
-          Total Suppliers: {filteredData.length}
+          Total Suppliers: {data.length}
         </div>
 
 
@@ -176,8 +190,8 @@ const Supplier = () => {
   </div>
 
   <div className="flex flex-col py-6 gap-2 mt-2">
-    {filteredData.length > 0 ? (
-      filteredData.map((post, index) => (
+    {currentData.length > 0 ? (
+      currentData.map((post, index) => (
         <div
           key={post.id}
           className="grid grid-cols-6 gap-2  px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
@@ -226,8 +240,8 @@ const Supplier = () => {
 </div> 
         {/* Mobile View */}
         <div className="md:hidden flex flex-col gap-4">
-          {filteredData.length > 0 ? (
-            filteredData.map((post, index) => (
+          {currentData.length > 0 ? (
+            currentData.map((post, index) => (
               <div
                 key={post.id}
                 className="border rounded-lg shadow p-4 bg-white"
@@ -283,6 +297,11 @@ const Supplier = () => {
           )}
           
         </div>
+         <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+      />
         </div>
         </>
 )}  
@@ -319,50 +338,55 @@ const Supplier = () => {
               {editId ? "Update Supplier" : "Add Supplier"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input
+             <div> <label className="block font-semibold mb-1">Nane  </label> 
+             <input
                 type="text"
                 name="name"
-                placeholder="Name"
+                placeholder=" Enter Name"
                 value={formData.name}
                 onChange={handleChange}
                 required
                 className="w-full p-2 border rounded"
-              />
-              <input
+              /> </div>
+             <div> <label className="block font-semibold mb-1"> Description  </label> 
+             <input
                 type="text"
                 name="description"
-                placeholder="Description"
+                placeholder=" Enter Description"
                 value={formData.description}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
-              />
-              <input
+              /></div>
+             <div> <label className="block font-semibold mb-1">Address </label> 
+             <input
                 type="text"
                 name="address"
-                placeholder="Address"
+                placeholder=" Enter Address"
                 value={formData.address}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
-              />
+              /></div>
+             <div> <label className="block font-semibold mb-1">City</label>
               <input
                 type="text"
                 name="city"
-                placeholder="City"
+                placeholder= " Enter City (eg-indore)"
                 value={formData.city}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
               />
+              </div>
               <div className="flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                  className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="px-4 py-2 rounded-md bg-blue-500 text-white  hover:bg-blue-600"
                 >
                   {editId ? "Update" : "Add"}
                 </button>

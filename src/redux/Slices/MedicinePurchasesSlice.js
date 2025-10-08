@@ -146,7 +146,17 @@ const MedicinePurchasesSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Employees
+      .addCase(fetchMedicinePurchases.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchMedicinePurchases.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch medicinePurchases";
+      })
+
       .addCase(fetchMedicinePurchases.fulfilled, (state, action) => {
+        state.loading = false;
         state.medicinePurchases = action.payload || [];
       })
       .addCase(insertMedicinePurchases.fulfilled, (state, action) => {

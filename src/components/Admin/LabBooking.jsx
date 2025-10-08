@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Pagination from "../common/Pagination";
 
 export default function LabBooking() {
   const dispatch = useDispatch();
@@ -88,6 +89,22 @@ export default function LabBooking() {
       ?.toLowerCase()
       .includes(search.trim().toLowerCase());
   });
+
+
+    // Pagination logic
+      const [searching, setSearching] = useState("");
+      const [page, setPage] = useState(1);
+      const limit = 10; // items per page
+      const totalPages = Math.ceil(filteredBookings .length / limit);
+      const startIndex = (page - 1) * limit;
+      const currentData = filteredBookings .slice(startIndex, startIndex + limit);
+  
+      // Reset to page 1 when search term changes
+      useEffect(() => {
+        setPage(1);
+      }, [searching]);
+    
+
 
   // 🔹 Delete booking
   const handleDelete = async (id) => {
@@ -207,8 +224,8 @@ export default function LabBooking() {
         </div>
 
         <div className="flex flex-col py-2 gap-2 mt-2">
-          {filteredBookings.length > 0 ? (
-            filteredBookings.map((b, index) => (
+          { currentData.length > 0 ? (
+             currentData.map((b, index) => (
               <div
                 key={b.id}
                 className="grid grid-cols-6 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
@@ -247,8 +264,8 @@ export default function LabBooking() {
 
       {/* Mobile Card View */}
       <div className="md:hidden flex flex-col gap-4">
-        {filteredBookings.length > 0 ? (
-          filteredBookings.map((b) => (
+        { currentData.length > 0 ? (
+           currentData.map((b) => (
             <div key={b.id} className="border rounded-lg shadow p-4 bg-white">
               <div className="flex justify-between items-center">
                 <div>
@@ -308,6 +325,12 @@ export default function LabBooking() {
           <p className="flex items-center text-xl text-black">No bookings found.</p>
         )}
       </div>
+             {/* ✅ Pagination added here */}
+              <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+      />
     </div>
   </>
 )}
@@ -317,12 +340,14 @@ export default function LabBooking() {
       {/* Add/Edit Modal */}
       {showForm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl">
+          <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl  max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
               {editData ? "Edit Booking" : "Add Booking"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-3">
               {/* Patient Select */}
+           <div>  
+             <label className="block font-semibold mb-1">Patient</label>
               <select
                 value={formData.patient_id}
                 onChange={(e) =>
@@ -339,9 +364,11 @@ export default function LabBooking() {
                   </option>
                 ))}
               </select>
+              </div>
 
               {/* Doctor Select - only for new */}
-             
+             <div>
+               <label className="block font-semibold mb-1">Doctor</label>
                 <select
                   value={formData.doctor_id}
                   onChange={(e) =>
@@ -356,11 +383,12 @@ export default function LabBooking() {
                     </option>
                   ))}
                 </select>
-             
+             </div>
 
               {/* Date & Time - only for new */}
              
                 <>
+                 <label className="block font-semibold mb-1">date &  Time</label>
                   <input
                     type="date"
                     value={formData.date}
@@ -382,6 +410,8 @@ export default function LabBooking() {
              
 
               {/* Gender - only for update */}
+              <div>
+                 <label className="block font-semibold mb-1">Gender</label>
               {editData && (
                 <select
                   value={formData.gender || ""}
@@ -397,9 +427,10 @@ export default function LabBooking() {
                   <option value="other">Other</option>
                 </select>
               )}
-
+</div>
               {/* Age - only for update */}
-              {editData && (
+            <div> 
+               <label className="block font-semibold mb-1">Age</label> {editData && (
                 <input
                   type="number"
                   placeholder="Enter Age"
@@ -411,28 +442,9 @@ export default function LabBooking() {
                   required
                 />
               )}
-
-              {/* Lab Test - both add & edit */}
-              {/* <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
-                  Select Lab Test
-                </label>
-                <select
-                  value={formData.lab_test_ids[0] || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lab_test_ids: [e.target.value] })
-                  }
-                  className="border p-2 rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                >
-                  <option value="">-- Select a Lab Test --</option>
-                  {Object.values(labsTestsData).map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
-              </div> */}
-              
+</div>
+          <div>  
+             <label className="block font-semibold mb-1">Lab Test </label>
                   <select
     multiple
     value={formData.lab_test_ids}
@@ -462,6 +474,7 @@ export default function LabBooking() {
       );
     })}
   </select>
+  </div>
  
               {/* Buttons */}
               <div className="flex justify-end gap-2 pt-2">

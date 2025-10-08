@@ -156,7 +156,11 @@ const prescriptionsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Employees
+      .addCase(fetchPrescriptions.pending,(state)=>{
+        state.loading=true;
+      })
       .addCase(fetchPrescriptions.fulfilled, (state, action) => {
+        state.loading=false;
        const data=   state.prescriptions = action.payload || [];
         console.log("Stste",data);
         

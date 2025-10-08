@@ -278,10 +278,11 @@ const Finance = () => {
 
       {/* INCOME MODAL */}
       {showIncomeForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add Income</h2>
-
+<div>
+  <label className="block font-semibold mb-1">Booking</label>
             <select
               value={incomeForm.booking_id}
               onChange={(e) => {
@@ -297,29 +298,43 @@ const Finance = () => {
                 </option>
               ))}
             </select>
-
-            <input
+</div>
+          <div>
+            <label className="block font-semibold mb-1">Amount</label>
+              <input
               type="number"
               placeholder="Amount"
               value={incomeForm.amount}
               onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })}
               className="border w-full p-2 mb-2 rounded"
             />
-            <input
+
+            </div>
+          <div>
+            <label className="block font-semibold mb-1">Payment Mode</label>
+              <input
               type="text"
               placeholder="Payment Mode"
               value={incomeForm.payment_mode}
               onChange={(e) => setIncomeForm({ ...incomeForm, payment_mode: e.target.value })}
               className="border w-full p-2 mb-2 rounded"
             />
-            <input
+
+            </div>
+          <div>
+            <label className="block font-semibold mb-1">Received By</label>
+              <input
               type="text"
               placeholder="Received By"
               value={incomeForm.received_by}
               onChange={(e) => setIncomeForm({ ...incomeForm, received_by: e.target.value })}
               className="border w-full p-2 mb-2 rounded"
             />
-            <input
+
+            </div>
+          <div>
+            <label className="block font-semibold mb-1">Date</label>
+              <input
               type="date"
               value={incomeForm.date.replace(/\//g, "-")}
               onChange={(e) =>
@@ -327,11 +342,12 @@ const Finance = () => {
               }
               className="border w-full p-2 mb-2 rounded"
             />
+             </div>
 
             <div className="flex gap-2 mt-2">
               <button
                 onClick={handleAddIncome}
-                className="flex-1 bg-green-600 text-white p-2 rounded hover:bg-green-700"
+                className="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
               >
                 Save
               </button>
@@ -348,46 +364,65 @@ const Finance = () => {
 
       {/* EXPENSE MODAL */}
       {showExpenseForm && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-96 relative">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add Expense</h2>
 
-            <input
+          <div>
+            <label className="block font-semibold mb-1">Title</label>
+              <input
               type="text"
               placeholder="Title"
               value={expenseForm.title}
               onChange={(e) => setExpenseForm({ ...expenseForm, title: e.target.value })}
               className="border w-full p-2 mb-2 rounded"
             />
-            <input
+
+            </div>
+          <div>
+            <label className="block font-semibold mb-1">Amount</label>
+              <input
               type="number"
               placeholder="Amount"
               value={expenseForm.amount}
               onChange={(e) => setExpenseForm({ ...expenseForm, amount: e.target.value })}
               className="border w-full p-2 mb-2 rounded"
             />
-            <input
+
+            </div>
+          <div>
+            <label className="block font-semibold mb-1">Paid To</label>
+              <input
               type="text"
               placeholder="Paid To"
               value={expenseForm.paid_to}
               onChange={(e) => setExpenseForm({ ...expenseForm, paid_to: e.target.value })}
               className="border w-full p-2 mb-2 rounded"
             />
-            <input
+
+            </div>
+          <div>
+            <label className="block font-semibold mb-1">Date</label>
+              <input
               type="date"
               value={expenseForm.date.replace(/\//g, "-")}
               onChange={(e) =>
                 setExpenseForm({ ...expenseForm, date: e.target.value.replace(/-/g, "/") })
               }
               className="border w-full p-2 mb-2 rounded"
+
+             
             />
+             </div>
+             <div>
+               <label className="block font-semibold mb-1"> Notes</label>
             <textarea
-              placeholder="Notes"
+              placeholder=" Enter Notes"
               value={expenseForm.notes}
               onChange={(e) => setExpenseForm({ ...expenseForm, notes: e.target.value })}
               className="border w-full p-2 mb-2 rounded"
             />
-
+</div>
             <div className="flex gap-2 mt-2">
               <button
                 onClick={handleAddExpense}

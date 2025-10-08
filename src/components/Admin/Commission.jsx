@@ -12,6 +12,7 @@ import { Search, Shield, Trash2, PlusCircle, MoreVertical, Edit, ChevronUp, Chev
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ToggleCell from "../common/ToggleCell";
+import Pagination from "../common/Pagination";
 
 export default function Commission() {
   const dispatch = useDispatch();
@@ -43,6 +44,19 @@ export default function Commission() {
     const doctorName = doctors[c.doctor_id]?.name || "";
     return doctorName.toLowerCase().includes(search.toLowerCase());
   });
+
+   // Pagination logic
+      const [searching, setSearching] = useState("");
+      const [page, setPage] = useState(1);
+      const limit = 10; // items per page
+      const totalPages = Math.ceil(filteredCommission .length / limit);
+      const startIndex = (page - 1) * limit;
+      const currentData = filteredCommission .slice(startIndex, startIndex + limit);
+  
+      // Reset to page 1 when search term changes
+      useEffect(() => {
+        setPage(1);
+      }, [searching]);
 
   const resetForm = () => {
     setFormData({
@@ -325,8 +339,8 @@ export default function Commission() {
         </div>
 
         <div className="flex flex-col py-6 gap-2 mt-2">
-          {filteredCommission.length > 0 ? (
-            filteredCommission.map((c, index) => (
+          {currentData.length > 0 ? (
+            currentData.map((c, index) => (
               <div
                 key={c.id}
                 className="grid grid-cols-8 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
@@ -380,8 +394,8 @@ export default function Commission() {
 
       {/* Mobile Card View */}
       <div className="md:hidden flex flex-col gap-4">
-        {filteredCommission.length > 0 ? (
-          filteredCommission.map((c, index) => (
+        {currentData.length > 0 ? (
+          currentData.map((c, index) => (
             <div key={c.id} className="border rounded-lg shadow p-4 bg-white">
               <div className="flex justify-between items-center">
                 <div>
@@ -453,6 +467,11 @@ export default function Commission() {
           </p>
         )}
       </div>
+       <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+        />
     </div>
   </>
 )}
@@ -466,6 +485,8 @@ export default function Commission() {
               {editData ? "Edit Commission" : "Add Commission"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+                <label className="block font-semibold mb-1">Doctor</label>
               <select
                 value={formData.doctor_id}
                 onChange={(e) =>
@@ -481,19 +502,24 @@ export default function Commission() {
                   </option>
                 ))}
               </select>
-
+              </div>
+<div>
+   <label className="block font-semibold mb-1">Amount</label>
               <input
                 type="number"
                 value={formData.amount}
                 onChange={(e) =>
                   setFormData({ ...formData, amount: e.target.value })
                 }
-                placeholder="Amount"
+                placeholder=" Enter Amount"
                 className="border p-2 rounded w-full"
                 required
               />
-
-              <input
+</div>
+              
+              <div>
+                <label className="block font-semibold mb-1">Source Type</label>
+                <input
                 type="text"
                 value={formData.source_type}
                 onChange={(e) =>
@@ -503,18 +529,22 @@ export default function Commission() {
                 className="border p-2 rounded w-full"
                 required
               />
-
+</div>
+<div>
+  <label className="block font-semibold mb-1">Source_id</label>
               <input
                 type="number"
                 value={formData.source_id}
                 onChange={(e) =>
                   setFormData({ ...formData, source_id: e.target.value })
                 }
-                placeholder="Source ID"
+                placeholder=" Enter Source ID"
                 className="border p-2 rounded w-full"
                 required
               />
-
+</div>
+<div>
+  <label className="block font-semibold mb-1">Date</label>
               <input
                 type="date"
                 value={formData.date}
@@ -524,6 +554,10 @@ export default function Commission() {
                 className="border p-2 rounded w-full"
                 required
               />
+              </div>
+
+<div>
+  <label className="block font-semibold mb-1">Status</label>
         {!editData &&(
               <select
                 value={formData.status}
@@ -539,6 +573,7 @@ export default function Commission() {
                 ))}
               </select>
 )}
+</div>
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
@@ -549,7 +584,7 @@ export default function Commission() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700"
                 >
                   Save
                 </button>

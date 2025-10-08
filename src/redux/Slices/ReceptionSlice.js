@@ -126,7 +126,11 @@ const receptionSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Employees
+      .addCase(fetchReceptions.pending,(state)=>{
+        state.loading=true;
+      })
       .addCase(fetchReceptions.fulfilled, (state, action) => {
+        state.loading=false;
      const data=   state.receptions = action.payload || [];
         console.log("Stste",data);
         

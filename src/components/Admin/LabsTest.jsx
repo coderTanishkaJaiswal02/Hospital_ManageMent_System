@@ -19,6 +19,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ToggleCell from "../common/ToggleCell";
+import Pagination from "../common/Pagination";
 
 export default function LabsTests() {
   const dispatch = useDispatch();
@@ -62,6 +63,21 @@ export default function LabsTests() {
   const filteredLabsTests = labsTestsData.filter((item) =>
     (item.name || "").toLowerCase().includes(search.toLowerCase())
   );
+
+  // Pagination logic
+      const [searching, setSearching] = useState("");
+      const [page, setPage] = useState(1);
+      const limit = 10; // items per page
+      const totalPages = Math.ceil(filteredLabsTests.length / limit);
+      const startIndex = (page - 1) * limit;
+      const currentData = filteredLabsTests.slice(startIndex, startIndex + limit);
+  
+      // Reset to page 1 when search term changes
+      useEffect(() => {
+        setPage(1);
+      }, [searching]);
+    
+
 
   // 🗑 Delete
   const handleDelete = async (id) => {
@@ -145,48 +161,6 @@ export default function LabsTests() {
   return (
     <div className="p-4 md:px-2 bg-gray-100 min-h-screen relative">
       <ToastContainer position="top-right" autoClose={3000} />
-
-
-      {/* Header */}
-      {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
-        <div className="flex flex-row gap-2 items-center justify-between">
-          <div className="flex gap-2 items-center">
-            <div className="bg-blue-400 rounded-xl border border-blue-300 p-3">
-              <Shield size={32} color="white" />
-            </div>
-            <div className="flex flex-col">
-              <h2 className="text-xl md:text-2xl font-bold">
-                Lab Test Management
-              </h2>
-              <p className="text-sm opacity-80">Manage system lab tests</p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => {
-              resetForm();
-              setShowForm(true);
-            }}
-            className="flex items-center justify-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100"
-          >
-            <PlusCircle size={18} /> New Lab Test
-          </button>
-        </div>
-
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center bg-white p-2 rounded-lg shadow w-full md:w-64">
-            <Search size={18} className="text-gray-500" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 outline-none text-gray-700"
-            />
-          </div>
-        </div>
-      </div> */}
-     
      
       {/* Header */}
       <div className="  bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg  md:px-4 md:py-8 py-4 border-collapse">
@@ -229,141 +203,6 @@ export default function LabsTests() {
       </div>
 
 
-      {/* Total count 
-      <div className="mb-2 font-semibold text-gray-700">
-        Total Lab Tests: {labsTestsData.length}
-      </div>
-
-      {/* Table View
-      <div className="overflow-x-auto bg-white rounded-xl shadow hidden md:block">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-white text-left rounded text-sm md:text-base">
-              <th className="p-3">ID</th>
-              <th className="p-3">Name</th>
-              <th className="p-3">Description</th>
-              <th className="p-3">Test Code</th>
-              <th className="p-3">Category</th>
-              <th className="p-3">Price</th>
-              <th className="p-3">Sample Type</th>
-              <th className="p-3">Unit</th>
-              <th className="p-3">Clinic</th>
-              <th className="p-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLabsTests.length > 0 ? (
-              filteredLabsTests.map((emp) => (
-                <tr key={emp.id} className="hover:bg-gray-50 text-sm md:text-base">
-                  <td className="p-3">{emp.id}</td>
-                  <td className="p-3">{emp.name}</td>
-                  <td className="p-3">{emp.description}</td>
-                  <td className="p-3">{emp.test_code}</td>
-                  <td className="p-3">{emp.category?.name}</td>
-                  <td className="p-3">{emp.price}</td>
-                  <td className="p-3">{emp.sample_type?.name}</td>
-                  <td className="p-3">{emp.unit?.name}</td>
-                  <td className="p-3">{emp.clinic?.name}</td>
-                  <td className="p-3 flex justify-center gap-2">
-                    <button
-                      onClick={() => {
-                        setEditData(emp);
-                        setShowForm(true);
-                      }}
-                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center gap-1"
-                    >
-                      <Edit size={14} /> Update
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(emp.id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm flex items-center gap-1"
-                    >
-                      <Trash2 size={14} /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="10" className="text-center p-4">
-                  No lab tests found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Card View
-      <div className="md:hidden flex flex-col gap-4">
-        {filteredLabsTests.length > 0 ? (
-          filteredLabsTests.map((emp) => (
-            <div key={emp.id} className="border rounded-lg shadow p-4 bg-white">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-semibold">{emp.name}</p>
-                  <p className="text-gray-600 text-sm">{emp.description}</p>
-                </div>
-                 <button
-                  onClick={() => setExpandedId(expandedId === emp.id ? null : emp.id)}
-                  className={`transform transition-transform duration-300 ${
-                  expandedId === emp.id ? "rotate-180" : "rotate-0"
-                  }`}
-                  >
-                  <ChevronUp size={20} />
-                </button>
-              </div>
-              {expandedId === emp.id && (
-                <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
-                  <p>
-                    <span className="font-semibold">ID:</span> {emp.id}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Test Code:</span> {emp.test_code}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Category:</span> {emp.category?.name}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Price:</span> {emp.price}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Sample Type:</span> {emp.sample_type?.name}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Unit:</span> {emp.unit?.name}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Clinic:</span> {emp.clinic?.name}
-                  </p>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => {
-                        setEditData(emp);
-                        setShowForm(true);
-                      }}
-                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                    >
-                      <Edit size={16} /> Update
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(emp.id)}
-                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                    >
-                      <Trash2 size={16} /> Delete
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500">No lab tests found.</p>
-        )}
-      </div>
-*/}
-
-
 
 {/* Loading Overlay */}
 {loading ? (
@@ -394,8 +233,8 @@ export default function LabsTests() {
         </div>
 
         <div className="flex flex-col py-6 gap-2 mt-2">
-          {filteredLabsTests.length > 0 ? (
-            filteredLabsTests.map((lab, index) => (
+          {currentData.length > 0 ? (
+            currentData.map((lab, index) => (
               <div
                 key={lab.id}
                 className="grid grid-cols-10 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
@@ -437,8 +276,8 @@ export default function LabsTests() {
 
       {/* Mobile View */}
       <div className="md:hidden flex flex-col gap-4">
-        {filteredLabsTests.length > 0 ? (
-          filteredLabsTests.map((lab, index) => (
+        {currentData.length > 0 ? (
+          currentData.map((lab, index) => (
             <div key={lab.id} className="border rounded-lg shadow p-4 bg-white">
               <div className="flex justify-between items-center">
                 <div>
@@ -490,11 +329,15 @@ export default function LabsTests() {
           <p className="flex items-center text-xl text-black">No lab tests found.</p>
         )}
       </div>
+       {/* ✅ Pagination added here */}
+              <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+      />
     </div>
   </>
 )}
-
-   {/* Add/Edit Modal */}
 
    {/* Add/Edit Lab Test Modal */}
 {showForm && (
@@ -504,6 +347,8 @@ export default function LabsTests() {
         {editData ? "Edit Lab Test" : "Add Lab Test"}
       </h3>
       <form onSubmit={handleSubmit} className="space-y-3">
+        <div>
+           <label className="block font-semibold mb-1"> Name</label>
         <input
           type="text"
           value={formData.name}
@@ -512,6 +357,9 @@ export default function LabsTests() {
           className="w-full border p-2 rounded"
           required
         />
+        </div>
+        <div>
+           <label className="block font-semibold mb-1">Text code</label>
         <input
           type="text"
           value={formData.test_code}
@@ -520,6 +368,9 @@ export default function LabsTests() {
           className="w-full border p-2 rounded"
           required
         />
+        </div>
+        <div>
+           <label className="block font-semibold mb-1">Description</label>
         <input
           type="text"
           value={formData.description}
@@ -528,7 +379,9 @@ export default function LabsTests() {
           className="w-full border p-2 rounded"
           required
         />
-
+</div>
+<div>
+   <label className="block font-semibold mb-1">Category</label>
         <select
           value={formData.category_id}
           onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
@@ -540,7 +393,10 @@ export default function LabsTests() {
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
+</div>
+<div>
 
+   <label className="block font-semibold mb-1">Sample Type</label>
         <select
           value={formData.sample_type_id}
           onChange={(e) => setFormData({ ...formData, sample_type_id: e.target.value })}
@@ -552,7 +408,9 @@ export default function LabsTests() {
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
         </select>
-
+  </div>
+  <div>
+   <label className="block font-semibold mb-1">Unit</label>
         <select
           value={formData.unit_id}
           onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}
@@ -564,7 +422,8 @@ export default function LabsTests() {
             <option key={u.id} value={u.id}>{u.name}</option>
           ))}
         </select>
-
+</div>
+<div>
         <select
           value={formData.clinic_id}
           onChange={(e) => setFormData({ ...formData, clinic_id: e.target.value })}
@@ -576,7 +435,8 @@ export default function LabsTests() {
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-
+</div>
+       <div>  <label className="block font-semibold mb-1">Generic Name</label>
         <input
           type="text"
           value={formData.price}
@@ -584,16 +444,18 @@ export default function LabsTests() {
           placeholder="Price"
           className="w-full border p-2 rounded"
           required
-        />
-
-        <input
+      />
+</div>
+       <div>  <label className="block font-semibold mb-1">Sub Category</label> 
+       <input
           type="text"
           value={formData.sub_category_id}
           onChange={(e) => setFormData({ ...formData, sub_category_id: e.target.value })}
           placeholder="Sub Category ID (optional)"
           className="w-full border p-2 rounded"
         />
-
+</div>
+       <div>  <label className="block font-semibold mb-1">Normal Range Male  </label>
         <input
           type="text"
           value={formData.normal_range_male}
@@ -601,23 +463,23 @@ export default function LabsTests() {
           placeholder="Normal Range Male"
           className="w-full border p-2 rounded"
         />
-
-        <input
+</div>
+       <div>  <label className="block font-semibold mb-1">Normal Range Female </label> <input
           type="text"
           value={formData.normal_range_female}
           onChange={(e) => setFormData({ ...formData, normal_range_female: e.target.value })}
           placeholder="Normal Range Female"
           className="w-full border p-2 rounded"
         />
-
-        <input
+</div>
+       <div>  <label className="block font-semibold mb-1">Method</label> <input
           type="text"
           value={formData.method}
           onChange={(e) => setFormData({ ...formData, method: e.target.value })}
           placeholder="Method"
           className="w-full border p-2 rounded"
         />
-
+</div>
         <div className="flex justify-end gap-2 pt-2">
           <button
             type="button"
@@ -628,7 +490,7 @@ export default function LabsTests() {
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700"
+            className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700"
           >
             {editData ? "Update" : "Save"}
           </button>
@@ -638,7 +500,7 @@ export default function LabsTests() {
   </div>
 )}
 
-
+      
 
       {/* Delete Modal */}
       {deleteId && (

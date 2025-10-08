@@ -22,6 +22,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ToggleCell from "../common/ToggleCell";
+import Pagination from "../common/Pagination";
 
 export default function LabsEmp() {
   const dispatch = useDispatch();
@@ -72,6 +73,17 @@ const filteredEmployees = employees.filter((emp) => {
   );
 });
 
+
+ const [searching, setSearching] = useState("");
+    const [page, setPage] = useState(1);
+    const limit =5;
+    const totalPages = Math.ceil(filteredEmployees.length / limit);
+    const startIndex = (page - 1) * limit;
+    const currentData =filteredEmployees.slice(startIndex, startIndex + limit);
+  
+    useEffect(() => {
+      setPage(1);
+    }, [searching]);
 
   
   const handleDelete = async (id) => {
@@ -230,8 +242,8 @@ const filteredEmployees = employees.filter((emp) => {
         </div>
 
         <div className="flex flex-col py-6 gap-2 mt-2">
-          {filteredEmployees.length > 0 ? (
-            filteredEmployees.map((emp, index) => (
+          {currentData.length > 0 ? (
+            currentData.map((emp, index) => (
               <div
                 key={emp.id}
                 className="grid grid-cols-9 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
@@ -274,8 +286,8 @@ const filteredEmployees = employees.filter((emp) => {
 
       {/* Mobile Version */}
       <div className="md:hidden flex flex-col gap-4">
-        {filteredEmployees.length > 0 ? (
-          filteredEmployees.map((emp, index) => (
+        {currentData.length > 0 ? (
+          currentData.map((emp, index) => (
             <div key={emp.id} className="border rounded-lg shadow p-4 bg-white">
               <div className="flex justify-between items-center">
                 <div>
@@ -341,6 +353,11 @@ const filteredEmployees = employees.filter((emp) => {
           <p className="flex items-center text-xl text-black">No employees found.</p>
         )}
       </div>
+          <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+        />
     </div>
   </>
 )}
@@ -349,23 +366,27 @@ const filteredEmployees = employees.filter((emp) => {
       {/* Add/Edit Modal */}
       {showForm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl">
+          <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl  max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
               {editData ? "Edit Employee" : "Add Employee"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-3">
+              <div>
+ <label className="block font-semibold mb-1">Age</label>
               <input
                 type="number"
                 value={formData.age}
                 onChange={(e) =>
                   setFormData({ ...formData, age: e.target.value })
                 }
-                placeholder="Age"
+                placeholder=" Enter Age"
                 className="w-full border p-2 rounded"
                 required
               />
-
+</div>
               {/* Qualification dropdown */}
+              <div>
+                 <label className="block font-semibold mb-1">Qualification</label>
               <select
                 value={formData.qualification_id}
                 onChange={(e) =>
@@ -382,17 +403,21 @@ const filteredEmployees = employees.filter((emp) => {
                 </option>
               ))}
               </select>
-
+</div>
+<div>
+   <label className="block font-semibold mb-1">Experience</label>
               <input
                 type="text"
                 value={formData.experience}
                 onChange={(e) =>
                   setFormData({ ...formData, experience: e.target.value })
                 }
-                placeholder="Experience"
+                placeholder=" Enter Experience"
                 className="w-full border p-2 rounded"
                 required
-              />
+              /></div>
+              <div>
+                 <label className="block font-semibold mb-1">Joining Date</label>
               <input
                 type="date"
                 value={formData.joining_date}
@@ -401,7 +426,9 @@ const filteredEmployees = employees.filter((emp) => {
                 }
                 className="w-full border p-2 rounded"
                 required
-              />
+              /></div>
+              <div>
+                 <label className="block font-semibold mb-1">Address</label>
               <input
                 type="text"
                 value={formData.address}
@@ -411,8 +438,10 @@ const filteredEmployees = employees.filter((emp) => {
                 placeholder="Address"
                 className="w-full border p-2 rounded"
                 required
-              />
-              <div className="flex flex-col md:flex-row gap-2">
+              /></div>
+
+              <div>
+                 <label className="block font-semibold mb-1">Lab Name</label>
                 <select
                   value={formData.lab_id}
                   onChange={(e) =>
@@ -428,6 +457,9 @@ const filteredEmployees = employees.filter((emp) => {
                     </option>
                   ))}
                 </select>
+                </div>
+                <div>
+                   <label className="block font-semibold mb-1">User</label>
                 <select
                   value={formData.user_id}
                   onChange={(e) =>

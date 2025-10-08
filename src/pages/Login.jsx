@@ -23,12 +23,9 @@ import { useState } from "react";
 
         toast.success("Login successful! 🎉");
 
-        if (userRole === "admin" || userRole === "sub-admin") {
+        if (userRole === "admin" ) {
           navigate("/admin-dashboard");
-        } else {
-          navigate("/user-dashboard");
-        }
-      } else {
+        } }else {
         // 🔹 If backend sends field-specific errors
         if (result.payload?.errors) {
           setErrors(result.payload.errors); // { email: "...", password: "..." }

@@ -13,10 +13,12 @@ import {
   Trash2,
   Edit,
   PlusCircle,
-  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ToggleCell from "../common/ToggleCell";
+import Pagination from "../common/Pagination";
 
 export default function LabResults() {
   const dispatch = useDispatch();
@@ -37,6 +39,7 @@ export default function LabResults() {
     remarks: "",
     value: "",
   });
+  
 
   useEffect(() => {
     dispatch(fetchData());
@@ -54,6 +57,18 @@ export default function LabResults() {
         );
       })
     : [];
+    
+    // Pagination logic
+    const [searching, setSearching] = useState("");
+    const [page, setPage] = useState(1);
+    const limit =5;
+    const totalPages = Math.ceil(filteredResults.length / limit);
+    const startIndex = (page - 1) * limit;
+    const currentData =filteredResults.slice(startIndex, startIndex + limit);
+  
+    useEffect(() => {
+      setPage(1);
+    }, [searching]);
 
   // Handle Save
   const handleSubmit = async (e) => {
@@ -119,154 +134,99 @@ export default function LabResults() {
   };
 
   return (
-    <div className="p-4 md:px-2 bg-gray-100 min-h-screen relative">
+    <div className="p-0 bg-gray-100 min-h-screen relative">
       <ToastContainer position="top-right" autoClose={3000} />
-      
+
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
-        <div className="flex flex-row gap-2 items-center justify-between">
-          <div className="flex gap-2 items-center">
-            <div className="bg-blue-400 rounded-xl border border-blue-300 p-3">
-              <Shield size={32} color="white" />
+      <div className="bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg md:px-4 md:py-8 py-4 border-collapse">
+        <div className="flex px-4 flex-row justify-between sm:items-center">
+          <div className="flex justify-items-center gap-3">
+            <div className="bg-blue-400 flex items-center justify-center rounded-xl border border-blue-300 p-2">
+              <Shield size={24} color="white" />
             </div>
-            <div className="flex flex-col">
-              <h2 className="text-xl md:text-2xl font-bold">Lab Results</h2>
-              <p className="text-sm opacity-80">Manage test results</p>
+            <div>
+              <h1 className="text-xl sm:text-2xl text-white font-bold">
+                Lab Results
+              </h1>
+              <p className="text-white hidden md:block">Manage test results</p>
             </div>
           </div>
-
           <button
             onClick={() => {
               resetForm();
               setShowForm(true);
             }}
-            className="flex items-center justify-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100"
+            className="bg-white text-blue-600 px-4 py-2 rounded-md hover:bg-gray-100"
           >
-            <PlusCircle size={18} /> New Result
+            + New Result
           </button>
         </div>
 
         {/* Search */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center bg-white p-2 rounded-lg shadow w-full md:w-64">
-            <Search size={18} className="text-gray-500" />
+        <div className="mt-4 px-2">
+          <div className="bg-white rounded-md flex items-center gap-2 px-2 py-2 w-full md:w-[500px]">
+            <Search size={24} color="gray" />
             <input
               type="text"
               placeholder="Search results..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 outline-none text-gray-700"
+              className="px-4 py-1 rounded w-full text-black outline-none"
             />
           </div>
         </div>
       </div>
 
-      {/* Total count */}
-      <div className="mb-2 font-semibold text-gray-700">
-        Total Results: {filteredResults.length}
-      </div>
+      {/* Loading Overlay */}
+     {loading && (
+      <div className="flex justify-center py-8">
+        <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-8 h-8"></span>
+         <span className="ml-2 text-xl text-blue-600">Loading...</span>
+       </div>
+     )}
+
+    {!loading && (
+      <>
+      <div className="bg-white rounded-t-none shadow p-4">
+           <div className="text-lg font-semibold border-b pb-2 mb-0">Total Result: {filteredResults.length}</div>
+
+ </div> 
+     
 
       {/* Desktop Table */}
-      <div className="overflow-x-auto bg-white rounded-xl shadow hidden md:block">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-white text-left rounded text-sm md:text-base">
-              <th className="p-3">Booking Test</th>
-              <th className="p-3">Result</th>
-              <th className="p-3">Symbol</th>
-              <th className="p-3">Remarks</th>
-              <th className="p-3">Value</th>
-              <th className="p-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredResults.length > 0 ? (
-              filteredResults.map((r) => (
-                <tr
+      <div className="overflow-x-auto hidden md:block bg-white rounded shadow p-0">
+        <div className="">
+          <div className="grid grid-cols-6 gap-1 px-6 py-3 border-b font-semibold text-gray-700 rounded-t-md">
+            <div>S.No</div>
+            <div>Booking Test</div>
+            <div>Result</div>
+            <div>Symbol</div>
+            <div>Remarks</div>
+            <div className="text-center mr-8">Actions</div>
+          </div>
+
+          <div className="flex flex-col py-6 gap-2 mt-2">
+            {currentData.length > 0 ? (
+              currentData.map((r, index) => (
+                <div
                   key={r.id}
-                  className="hover:bg-gray-50 text-sm md:text-base"
+                  className="grid grid-cols-6 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
                 >
-                  <td className="p-3">
-                    {bookings[r.booking_test_id]?.id || r.booking_test_id}
-                  </td>
-                  <td className="p-3">{r.result}</td>
-                  <td className="p-3">{r.symbol_id}</td>
-                  <td className="p-3">{r.remarks}</td>
-                  <td className="p-3">{r.value}</td>
-                  <td className="p-3 flex justify-center gap-2">
-                    <button
-                      onClick={() => {
-                        setEditData(r);
-                        setShowForm(true);
-                      }}
-                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center gap-1"
-                    >
-                      <Edit size={14} /> Update
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(r.id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm flex items-center gap-1"
-                    >
-                      <Trash2 size={14} /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="text-center p-4">
-                  No results found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                  <div>{(page - 1) * limit + index + 1}</div>
 
-      {/* Mobile Card View */}
-      <div className="md:hidden flex flex-col gap-4">
-        {filteredResults.length > 0 ? (
-          filteredResults.map((r) => (
-            <div key={r.id} className="border rounded-lg shadow p-4 bg-white">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-semibold">{r.result}</p>
-                  <p className="text-gray-600 text-sm">
-                    Booking: {r.booking_test_id}
-                  </p>
-                </div>
-                <button
-                  onClick={() =>
-                    setExpandedId(expandedId === r.id ? null : r.id)
-                  }
-                  className={`transform transition-transform duration-300 ${
-                    expandedId === r.id ? "rotate-180" : "rotate-0"
-                  }`}
-                >
-                  <ChevronUp size={20} />
-                </button>
-              </div>
-
-              {expandedId === r.id && (
-                <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
-                  <p>
-                    <span className="font-semibold">Symbol: </span>
-                    {r.symbol_id}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Remarks: </span>
-                    {r.remarks}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Value: </span>
-                    {r.value}
-                  </p>
-                  <div className="flex gap-2 mt-2">
+                  <div>{bookings[r.booking_test_id]?.test_name || r.booking_test_id}</div>
+                  <div>
+                    <ToggleCell text={r.result} limit={15} />
+                  </div>
+                  <div>
+                    <ToggleCell text={r.symbol_id} limit={15} />
+                  </div>
+                  <div>
+                    <ToggleCell text={r.remarks} limit={15} />
+                  </div>
+                  <div className="flex justify-center gap-2 mr-7">
                     <button
-                      onClick={() => {
-                        setEditData(r);
-                        setShowForm(true);
-                      }}
+                      onClick={() => { setEditData(r); setShowForm(true); }}
                       className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
                     >
                       <Edit size={16} /> Update
@@ -279,13 +239,82 @@ export default function LabResults() {
                     </button>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="flex justify-center items-center px-6">
+                <p className="text-black">No results found.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden flex flex-col gap-4 mt-4 px-4">
+        {currentData.length > 0 ? (
+          currentData.map((r, index) => (
+            <div key={r.id} className="border rounded-lg shadow p-4 bg-white">
+              <div className="flex justify-between items-center">
+                <div>
+                 <p className="font-semibold">{(page - 1) * limit + index + 1}. {r.result}</p>
+
+                  <p className="text-gray-600 text-sm">
+                    Booking: {r.booking_test_id}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
+                  className={`transform transition-transform duration-300 ${
+                    expandedId === r.id ? "rotate-180" : "rotate-0"
+                  }`}
+                >
+                  <ChevronDown size={20} />
+                </button>
+              </div>
+
+              {expandedId === r.id && (
+                <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
+                  <p><span className="font-semibold">Symbol: </span>{r.symbol_id}</p>
+                  <p><span className="font-semibold">Remarks: </span>{r.remarks}</p>
+                  <p><span className="font-semibold">Value: </span>{r.value}</p>
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    <button
+                      onClick={() => { setEditData(r); setShowForm(true); }}
+                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                    >
+                      <Edit size={16} /> Update
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(r.id)}
+                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      <Trash2 size={16} /> Delete
+                    </button>
+                    
+                  </div>
+                  
+                </div>  
               )}
+             
             </div>
           ))
         ) : (
           <p className="text-gray-500">No results found.</p>
         )}
+        
       </div>
+      
+      <div className="bg-white p-4 mt-0 rounded-b-lg shadow flex justify-center"> 
+          <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+      />
+      </div>
+     
+       </>
+      )}
+
 
       {/* Add/Edit Modal */}
       {showForm && (
@@ -304,8 +333,8 @@ export default function LabResults() {
                 required
               >
                 <option value="">Select Booking Test</option>
-                {Object.values(bookings).map((b) =>
-                  b.booking_tests.map((test) => (
+                {Object.values(bookings || {}).map((b) =>
+                  b.booking_tests?.map((test) => (
                     <option key={test.id} value={test.id}>
                       {test.lab_test.name} (ID: {test.id})
                     </option>
@@ -402,4 +431,3 @@ export default function LabResults() {
     </div>
   );
 }
-

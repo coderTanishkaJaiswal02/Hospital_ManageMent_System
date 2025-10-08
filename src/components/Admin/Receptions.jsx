@@ -11,6 +11,7 @@ import { Search, Shield, Trash2, Edit, PlusCircle, MoreVertical, ChevronUp, Chev
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ToggleCell from "../common/ToggleCell";
+import Pagination from "../common/Pagination";
 
 export default function Receptions() {
   const dispatch = useDispatch();
@@ -44,6 +45,19 @@ export default function Receptions() {
   const filteredReceptions = receptions.filter((r) =>
     (users[r.user_id]?.name || "").toLowerCase().includes(search.toLowerCase())
   );
+
+   // Pagination logic
+      const [searching, setSearching] = useState("");
+      const [page, setPage] = useState(1);
+      const limit =5;
+      const totalPages = Math.ceil(filteredReceptions.length / limit);
+      const startIndex = (page - 1) * limit;
+      const currentData =filteredReceptions.slice(startIndex, startIndex + limit);
+    
+      useEffect(() => {
+        setPage(1);
+      }, [searching]);
+  
 
   const handleDelete = async (id) => {
     try {
@@ -121,45 +135,9 @@ export default function Receptions() {
     <div className="p-4 md:px-2 bg-gray-100 min-h-screen relative">
       <ToastContainer position="top-right" autoClose={3000} />
 
-      {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-40">
-          <p className="text-white text-xl bg-gray-700 px-6 py-4 rounded">Loading...</p>
-        </div>
-      )}
 
       {/* Header */}
-      {/* <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-6 text-white p-4 rounded-xl shadow flex justify-between flex-col gap-4 mb-6">
-        <div className="flex flex-row gap-2 items-center justify-between">
-          <div className="flex gap-2 items-center">
-            <div className="bg-blue-400 rounded-xl border border-blue-300 p-3">
-              <Shield size={32} color="white" />
-            </div>
-            <div className="flex flex-col">
-              <h2 className="text-xl md:text-2xl font-bold">Reception Management</h2>
-              <p className="text-sm opacity-80">Manage system receptions</p>
-            </div>
-          </div>
-          <button
-            onClick={() => { resetForm(); setShowForm(true); }}
-            className="flex items-center justify-center gap-2 bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100"
-          >
-            <PlusCircle size={18} /> New Reception
-          </button>
-        </div>
-
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center bg-white p-2 rounded-lg shadow w-full md:w-64">
-            <Search size={18} className="text-gray-500" />
-            <input
-              type="text"
-              placeholder="Search receptions..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 outline-none text-gray-700"
-            />
-          </div>
-        </div>
-      </div> */}
+    
 
 
        <div className="  bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg  md:px-4 md:py-8 py-4 border-collapse">
@@ -199,116 +177,6 @@ export default function Receptions() {
       </div>
 
 
-      {/* <div className="mb-2 font-semibold text-gray-700">
-        Total Receptions: {receptions.length}
-      </div>
-
-       Desktop Table 
-      <div className="overflow-x-auto bg-white rounded-xl shadow hidden md:block">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-white text-left rounded text-sm md:text-base">
-              <th className="p-3">ID</th>
-              <th className="p-3">Name</th>
-              <th className="p-3">Qualification</th>
-              <th className="p-3">Email</th>
-              <th className="p-3">Father/Husband</th>
-              <th className="p-3">Phone</th>
-              <th className="p-3">Address</th>
-              <th className="p-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredReceptions.length > 0 ? (
-              filteredReceptions.map((r) => (
-                <tr key={r.id} className="hover:bg-gray-50 text-sm md:text-base">
-                  <td className="p-3">{r.id}</td>
-                  <td className="p-3">{users[r.user_id]?.name}</td>
-                  <td className="p-3">{qualifications[r.qualification_id]?.degree}</td>
-                  <td className="p-3">{users[r.user_id]?.email}</td>
-                  <td className="p-3">{r.husband_or_father_name}</td>
-                  <td className="p-3">{r.emergency_contact}</td>
-                  <td className="p-3">{r.address}</td>
-                  <td className="p-3 flex justify-center gap-2">
-                    <button
-                      onClick={() => { setEditData(r); setShowForm(true); }}
-                      className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm flex items-center gap-1"
-                    >
-                      <Edit size={14} /> Update
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(r.id)}
-                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm flex items-center gap-1"
-                    >
-                      <Trash2 size={14} /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="8" className="text-center p-4">No receptions found</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-
-       Mobile View 
-<div className="md:hidden flex flex-col gap-4">
-  {filteredReceptions.length > 0 ? (
-    filteredReceptions.map((r) => (
-      <div key={r.id} className="border rounded-lg shadow bg-white">
-        
-        <div className="flex justify-between items-center p-4">
-          <div>
-            <p className="font-semibold">{users[r.user_id]?.name}</p>
-            <p className="text-gray-600 text-sm">{qualifications[r.qualification_id]?.degree}</p>
-          </div>
-          <button
-            onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
-            className={`transform transition-transform duration-300 ${
-              expandedId === r.id ? "rotate-180" : "rotate-0"
-            }`}
-          >
-            <ChevronUp size={20} />
-          </button>
-        </div>
-
-        
-        <div
-          className={`overflow-hidden transition-all duration-300 ${
-            expandedId === r.id ? "max-h-96 p-4" : "max-h-0"
-          }`}
-        >
-          <p><span className="font-semibold">Email: </span>{users[r.user_id]?.email}</p>
-          <p><span className="font-semibold">Father/Husband: </span>{r.husband_or_father_name}</p>
-          <p><span className="font-semibold">Phone: </span>{r.emergency_contact}</p>
-          <p><span className="font-semibold">Address: </span>{r.address}</p>
-
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={() => { setEditData(r); setShowForm(true); }}
-              className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-            >
-              <Edit size={16} /> Update
-            </button>
-            <button
-              onClick={() => setDeleteId(r.id)}
-              className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-            >
-              <Trash2 size={16} /> Delete
-            </button>
-          </div>
-        </div>
-      </div>
-    ))
-  ) : (
-    <p className="text-gray-500 p-4">No receptions found.</p>
-  )}
-</div> */}
-
 {/* Loading Overlay */}
 {loading ? (
   <div className="flex items-center justify-center h-[400px]">
@@ -337,8 +205,8 @@ export default function Receptions() {
         </div>
 
         <div className="flex flex-col py-2 gap-2 mt-2">
-          {filteredReceptions.length > 0 ? (
-            filteredReceptions.map((r, index) => (
+          {currentData.length > 0 ? (
+            currentData.map((r, index) => (
               <div
                 key={r.id}
                 className="grid grid-cols-8 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
@@ -376,8 +244,8 @@ export default function Receptions() {
 
       {/* Mobile Card View */}
       <div className="md:hidden flex flex-col gap-4">
-        {filteredReceptions.length > 0 ? (
-          filteredReceptions.map((r) => (
+        {currentData.length > 0 ? (
+          currentData.map((r) => (
             <div key={r.id} className="border rounded-lg shadow p-4 bg-white">
               <div className="flex justify-between items-center">
                 <div>
@@ -425,6 +293,12 @@ export default function Receptions() {
           <p className="flex items-center text-xl text-black">No receptions found.</p>
         )}
       </div>
+         {/* ✅ Pagination added here */}
+       <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p)}
+      />
     </div>
   </>
 )}
@@ -434,10 +308,12 @@ export default function Receptions() {
       {/* Add/Edit Modal */}
       {showForm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl">
+          <div className="bg-white p-6 rounded-xl w-11/12 md:w-1/2 lg:w-1/3 shadow-xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">{editData ? "Edit Reception" : "Add Reception"}</h3>
             <form onSubmit={handleSubmit} className="space-y-3">
 
+<div>
+             <label className="block font-semibold mb-1">User</label>
               {/* User dropdown only in Add */}
               {!editData && (
                 <select
@@ -454,8 +330,10 @@ export default function Receptions() {
                   ))}
                 </select>
               )}
-
+</div>
               {/* Qualification */}
+              <div>
+                   <label className="block font-semibold mb-1">Qualification</label>
               <select
                 value={formData.qualification_id}
                 onChange={(e) => setFormData({ ...formData, qualification_id: e.target.value })}
@@ -467,7 +345,10 @@ export default function Receptions() {
                   <option key={q.id} value={q.id}>{q.degree}</option>
                 ))}
               </select>
+</div>
 
+<div>
+     <label className="block font-semibold mb-1">Husband /Father Name</label>
               <input
                 type="text"
                 value={formData.husband_or_father_name}
@@ -476,7 +357,8 @@ export default function Receptions() {
                 className="w-full border p-2 rounded"
                 required
               />
-
+</div>
+<div>   <label className="block font-semibold mb-1">Emergency Number</label>
               <input
                 type="text"
                 value={formData.emergency_contact}
@@ -485,7 +367,9 @@ export default function Receptions() {
                 className="w-full border p-2 rounded"
                 required
               />
-
+</div>
+<div>
+     <label className="block font-semibold mb-1">Address</label>
               <input
                 type="text"
                 value={formData.address}
@@ -494,7 +378,10 @@ export default function Receptions() {
                 className="w-full border p-2 rounded"
                 required
               />
+</div>
 
+<div>
+     <label className="block font-semibold mb-1">Joining Date</label>
               {/* Joining Date */}
               <input
                 type="date"
@@ -503,7 +390,9 @@ export default function Receptions() {
                 className="w-full border p-2 rounded"
                 required
               />
-
+</div>
+<div>
+     <label className="block font-semibold mb-1">Shift</label>
               {/* Shift */}
               <select
                 value={formData.shift}
@@ -511,13 +400,14 @@ export default function Receptions() {
                 className="border p-2 rounded w-full"
                 required
               >
+               
                 <option value="">Select Shift</option>
                 <option value="Day">Day</option>
                 <option value="Night">Night</option>
               </select>
-
+</div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-xl">
+                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-xl  hover:bg-gray-300">
                   Cancel
                 </button>
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700">

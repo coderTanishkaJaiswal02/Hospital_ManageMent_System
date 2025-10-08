@@ -7,7 +7,6 @@ import {
   DollarSign,
   LayoutDashboard,
   Landmark,
-  LucideTextAlignStart,
   Menu,
   Microscope,
   Pill,
