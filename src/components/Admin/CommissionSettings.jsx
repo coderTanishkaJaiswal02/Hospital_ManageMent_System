@@ -7,8 +7,8 @@ import {
   updateUser,
   deleteUser,
 } from "../../redux/Slices/CommissionSettingsSlice";
-import { Search, Shield, Trash2, Edit } from "lucide-react";
-import Pagination from "../common/Pagination"; // <-- import your pagination component
+import { Search, Shield, Trash2, Edit, ChevronDown } from "lucide-react";
+import Pagination from "../common/Pagination";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -29,6 +29,7 @@ function CommissionSettings() {
   });
   const [deleteId, setDeleteId] = useState(null);
   const [error, setError] = useState("");
+  const [expandedId, setExpandedId] = useState(null); // <-- Added state
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -53,33 +54,29 @@ function CommissionSettings() {
     }
   }, [showForm]);
 
-  // Filter + sort by newest (id descending)
+  // Filter + sort by newest
   const filtered = [...commissions]
     .filter((c) => {
       const doctorName = doctors?.[c.doctor_id]?.name || "";
       const searchable = `${c.doctor_id} ${doctorName} ${c.type} ${c.source}`.toLowerCase();
       return searchable.includes(searchTerm.toLowerCase());
     })
-    .sort((a, b) => b.id - a.id); // <-- newest on top
+    .sort((a, b) => b.id - a.id);
 
   // Pagination logic
   const totalPages = Math.ceil(filtered.length / limit);
   const startIndex = (page - 1) * limit;
   const currentData = filtered.slice(startIndex, startIndex + limit);
 
-  useEffect(() => {
-    setPage(1); // reset page on search
-  }, [searchTerm]);
+  useEffect(() => setPage(1), [searchTerm]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
     if (!form.doctor_id) {
       setError("Please select a doctor");
       return;
     }
-
     try {
       if (editing) {
         await dispatch(updateUser({ id: editing.id, updatedUser: form })).unwrap();
@@ -126,7 +123,7 @@ function CommissionSettings() {
       <ToastContainer position="top-right" autoClose={3000} />
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg md:px-4 md:py-8 py-4 border-collapse">
+      <div className="bg-gradient-to-r from-blue-500 to-blue-600 gap-2 rounded-b-none rounded-lg md:px-4 md:py-8 py-4">
         <div className="flex px-4 flex-row justify-between sm:items-center">
           <div className="flex justify-items-center gap-3">
             <div className="bg-blue-400 flex items-center justify-center rounded-xl border border-blue-300 p-2">
@@ -183,7 +180,7 @@ function CommissionSettings() {
       {/* Commission List */}
       {!loading && (
         <>
-          <div className="bg-white rounded-t-none shadow p-4">
+          <div className="bg-white shadow p-4">
             <div className="text-lg font-semibold border-b pb-2 mb-0">
               Total Commissions: {filtered.length}
             </div>
@@ -198,40 +195,34 @@ function CommissionSettings() {
               <div>Source</div>
               <div>Value</div>
               <div>Calculation</div>
-              <div className="text-center mr-5">Actions</div>
+              <div className="text-center">Actions</div>
             </div>
-
             <div className="flex flex-col py-4 gap-2 mt-2">
               {currentData.length === 0 ? (
                 <div className="text-center py-4 text-gray-500">
                   No commissions found.
                 </div>
               ) : (
-                currentData.map((commission, idx) => (
+                currentData.map((c, idx) => (
                   <div
-                    key={commission.id}
+                    key={c.id}
                     className="grid grid-cols-7 gap-2 px-6 py-4 border-b rounded-lg hover:bg-gray-50 shadow-sm bg-white hover:shadow-md transition items-center"
                   >
                     <div>{startIndex + idx + 1}</div>
-                    <div className="text-gray-700">
-                      {doctors[commission.doctor_id]?.name ||
-                        `Doctor #${commission.doctor_id}`}
-                    </div>
-                    <div>{commission.type}</div>
-                    <div>{commission.source}</div>
-                    <div>{commission.value}</div>
-                    <div>{commission.calculation_type}</div>
-
-                    {/* Actions */}
-                    <div className="flex justify-center mr-2 gap-1">
+                    <div>{doctors[c.doctor_id]?.name || `Doctor #${c.doctor_id}`}</div>
+                    <div>{c.type}</div>
+                    <div>{c.source}</div>
+                    <div>{c.value}</div>
+                    <div>{c.calculation_type}</div>
+                    <div className="flex justify-center gap-1">
                       <button
-                        onClick={() => handleEdit(commission)}
+                        onClick={() => handleEdit(c)}
                         className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
                       >
                         <Edit size={16} /> Update
                       </button>
                       <button
-                        onClick={() => confirmDelete(commission.id)}
+                        onClick={() => confirmDelete(c.id)}
                         className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
                       >
                         <Trash2 size={16} /> Delete
@@ -242,14 +233,78 @@ function CommissionSettings() {
               )}
             </div>
 
-          <div className="bg-white p-4 mt-0 rounded-b-lg shadow flex justify-center">
-              {/* Pagination Component */}
+            {/* Pagination */}
+            <div className="bg-white p-4 mt-0 rounded-b-lg shadow flex justify-center">
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={(p) => setPage(p)}
+              />
+            </div>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden flex flex-col gap-4 mt-4 px-4">
+            {currentData.length === 0 ? (
+              <p className="text-gray-500 text-center">No commissions found.</p>
+            ) : (
+              currentData.map((c, idx) => (
+                <div key={c.id} className="border rounded-lg shadow p-4 bg-white">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold">
+                        {startIndex + idx + 1}. {doctors[c.doctor_id]?.name || `Doctor #${c.doctor_id}`}
+                      </p>
+                      <p className="text-gray-600 text-sm">
+                        Type: {c.type} | Source: {c.source}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
+                      className={`transform transition-transform duration-300 ${
+                        expandedId === c.id ? "rotate-180" : "rotate-0"
+                      }`}
+                    >
+                      <ChevronDown size={20} />
+                    </button>
+                  </div>
+
+                  {expandedId === c.id && (
+                    <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
+                      <p>
+                        <span className="font-semibold">Value:</span> {c.value}
+                      </p>
+                      <p>
+                        <span className="font-semibold">Calculation:</span> {c.calculation_type}
+                      </p>
+                      <div className="flex gap-2 mt-2 flex-wrap">
+                        <button
+                          onClick={() => handleEdit(c)}
+                          className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                        >
+                          <Edit size={16} /> Update
+                        </button>
+                        <button
+                          onClick={() => confirmDelete(c.id)}
+                          className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        >
+                          <Trash2 size={16} /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Mobile Pagination */}
+          <div className="md:hidden bg-white p-4 mt-0 rounded-b-lg shadow flex justify-center">
             <Pagination
               currentPage={page}
               totalPages={totalPages}
               onPageChange={(p) => setPage(p)}
             />
-          </div>
           </div>
         </>
       )}
@@ -304,8 +359,8 @@ function CommissionSettings() {
                 }
                 className="border p-2 rounded w-full"
               >
-                <option value="flat">flat</option>
-                <option value="percentage">percentage</option>
+                <option value="Flat">Flat</option>
+                <option value="Percentage">Percentage</option>
               </select>
 
               {error && <p className="text-sm text-red-500">{error}</p>}

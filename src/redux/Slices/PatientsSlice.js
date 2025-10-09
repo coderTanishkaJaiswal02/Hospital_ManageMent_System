@@ -122,9 +122,13 @@ const patientsSlice = createSlice({
   extraReducers: (builder) => {
     builder
 
+    .addCase(fetchAllPatients.pending,(state)=>{
+      state.loading=true;
+    })
       // Patients
       .addCase(fetchAllPatients.fulfilled, (state, action) => {
   // Map doctor info if returned as object
+  state.loading=false;
   state.list = action.payload.map((patient) => {
     // If patient.doctor exists, use its id
     if (patient.doctor) {

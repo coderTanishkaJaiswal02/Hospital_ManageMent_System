@@ -12,11 +12,12 @@ import {
 } from "../../redux/Slices/PatientsSlice";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Shield, Trash2 } from "lucide-react";
+import { Shield, Trash2, Search, Plus, ChevronDown, ChevronUp, Edit } from "lucide-react";
+import Pagination from "../common/Pagination";
 
 const PatientsList = () => {
   const dispatch = useDispatch();
-  const { list, doctors } = useSelector((state) => state.patients);
+  const { list, doctors, loading } = useSelector((state) => state.patients);
 
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -45,6 +46,11 @@ const PatientsList = () => {
 
   const [deletePatientData, setDeletePatientData] = useState(null);
 
+  // --- Pagination ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // --- Fetch patients & doctors ---
   useEffect(() => {
     dispatch(fetchAllPatients()).catch(() =>
       toast.error("Failed to fetch patients")
@@ -134,269 +140,248 @@ const PatientsList = () => {
       a.id === fetchedPatientId ? -1 : b.id === fetchedPatientId ? 1 : 0
     );
 
+ // Pagination logic
+       const [searching, setSearching] = useState("");
+       const [page, setPage] = useState(1);
+       const limit =5;
+       const totalPages = Math.ceil(filteredList.length / limit);
+       const startIndex = (page - 1) * limit;
+       const currentData =filteredList.slice(startIndex, startIndex + limit);
+     
+       useEffect(() => {
+         setPage(1);
+       }, [searching]);
+ 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto flex flex-col gap-6">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto flex flex-col ">
       <ToastContainer position="top-right" autoClose={3000} />
 
       {/* Header */}
-      <div className="bg-blue-500 rounded px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex flex-col w-full">
+      <div className="bg-blue-500 rounded-t px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col w-full md:max-w-3xl">
           <div className="flex items-center gap-3 mb-2">
             <div className="bg-blue-400 rounded-xl border border-blue-300 p-2">
               <Shield size={28} color="white" />
             </div>
-            <h2 className="text-xl md:text-2xl font-semibold text-white">
-              Patient List
+            <h2 className="text-xl sm:text-2xl font-semibold text-white">
+              Patients Dashboard
             </h2>
           </div>
-          <p className="text-white text-sm mb-3">Manage all patients</p>
-          <input
-            type="text"
-            placeholder="Search patients..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white bg-white text-black"
-          />
+          <p className="text-white text-sm mb-3">Manage patients and their details</p>
+          <div className="relative">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search Patients..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full sm:max-w-md border border-gray-300 rounded px-10 py-2 focus:outline-none focus:ring-2 focus:ring-white bg-white text-black"
+            />
+          </div>
         </div>
 
         <button
-          onClick={() => {
-            setShowForm(!showForm);
-            setEditId(null);
-          }}
-          className="bg-white text-blue-500 font-semibold px-4 py-2 rounded hover:bg-gray-100 w-full md:w-auto"
+          onClick={() => { setShowForm(true); setEditId(null); }}
+          className="bg-white text-blue-500 font-semibold px-4 sm:px-6 py-2 rounded hover:bg-gray-100 w-full sm:w-auto flex items-center gap-2 justify-center"
         >
-          {showForm && !editId ? "Close Form" : "Add Patient"}
+          <Plus className="w-4 h-4" /> Add Patient
         </button>
       </div>
 
-      {/* Total Patients */}
-      <p className="text-black font-semibold text-sm md:text-base">
-        Total Patients: {filteredList.length}
-      </p>
-
-      {/* Fetch by ID */}
-      <div className="mb-4 flex flex-col sm:flex-row gap-2">
-        <input
-          type="text"
-          placeholder="Enter Patient ID"
-          value={fetchId}
-          onChange={(e) => setFetchId(e.target.value)}
-          className="border p-2 rounded flex-1"
-        />
-        <button
-          onClick={handleFetchById}
-          className="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto"
-        >
-          Fetch Patient by ID
-        </button>
-        <button
-          onClick={() => {
-            resetForm();
-            dispatch(clearSelected());
-            setExpandedId(null);
-            setFetchedPatientId(null);
-          }}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full sm:w-auto"
-        >
-          Close Form
-        </button>
-      </div>
-
-      {/* Add Patient Form */}
+      {/* Add Patient Modal */}
       {showForm && !editId && (
-        <form
-          onSubmit={handleSubmit}
-          className="mb-4 p-4 border rounded shadow bg-white flex flex-col gap-2"
-        >
-          <h3 className="text-lg font-semibold">Add New Patient</h3>
-          <select
-            name="doctor_id"
-            value={formData.doctor_id || ""}
-            onChange={handleChange}
-            className="border p-2 rounded w-full"
-          >
-            <option value="">Select Doctor</option>
-            {doctors.map((doc) => (
-              <option key={doc.id} value={doc.id}>
-                {doc.name}
-              </option>
-            ))}
-          </select>
-          {Object.keys(formData).map((key) => {
-            if (key === "doctor_id" || key === "clinic_id") return null;
-            return (
-              <input
-                key={key}
-                name={key}
-                value={formData[key] || ""}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded shadow-lg max-w-2xl w-full p-6 relative max-h-[80vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold mb-4">Add New Patient</h3>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+              <select
+                name="doctor_id"
+                value={formData.doctor_id || ""}
                 onChange={handleChange}
-                placeholder={key.replace("_", " ")}
                 className="border p-2 rounded w-full"
-              />
-            );
-          })}
-          <button
-            type="submit"
-            className="bg-green-500 text-white px-4 py-2 rounded mt-2"
-          >
-            Add Patient
-          </button>
-        </form>
-      )}
-
-      {/* Desktop Table */}
-      <div className="overflow-x-auto bg-white rounded shadow hidden md:block">
-        <table className="min-w-full divide-y divide-gray-200 text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-3 py-2 text-left">ID</th>
-              <th className="px-3 py-2 text-left">Name</th>
-              <th className="px-3 py-2 text-left">Age</th>
-              <th className="px-3 py-2 text-left">Doctor</th>
-              <th className="px-3 py-2 text-left">Address</th>
-              <th className="px-3 py-2 text-left">City</th>
-              <th className="px-3 py-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredList.map((patient) => (
-              <React.Fragment key={patient.id}>
-                <tr
-                  className="cursor-pointer hover:bg-gray-50"
-                  onClick={() =>
-                    setExpandedId(expandedId === patient.id ? null : patient.id)
-                  }
-                >
-                  <td className="px-3 py-2 text-blue-600 underline">
-                    {patient.id}
-                  </td>
-                  <td className="px-3 py-2">{patient.name}</td>
-                  <td className="px-3 py-2">{patient.age}</td>
-                  <td className="px-3 py-2">
-                    {patient.doctor_name ||
-                      doctors.find(
-                        (d) => Number(d.id) === Number(patient.doctor_id)
-                      )?.name ||
-                      "N/A"}
-                  </td>
-                  <td className="px-3 py-2">{patient.address}</td>
-                  <td className="px-3 py-2">{patient.city}</td>
-                  <td className="px-3 py-2 flex flex-wrap gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeletePatientData(patient);
-                      }}
-                      className="bg-red-600 text-white px-2 py-1 flex gap-2 rounded hover:bg-red-700 text-xs"
-                    >
-                       <Trash2 size={16} />
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-
-                {expandedId === patient.id && (
-                  <tr className="bg-gray-50">
-                    <td colSpan="7" className="px-4 py-3 text-sm">
-                      <div className="space-y-1">
-                        <p>
-                          <strong>Father/Husband:</strong>{" "}
-                          {patient.father_husband_name}
-                        </p>
-                        <p>
-                          <strong>Email:</strong> {patient.email}
-                        </p>
-                        <p>
-                          <strong>Phone:</strong> {patient.phone}
-                        </p>
-                        <p>
-                          <strong>Gender:</strong> {patient.gender}
-                        </p>
-                        <p>
-                          <strong>Disease:</strong> {patient.disease}
-                        </p>
-                        <p>
-                          <strong>Symptoms:</strong> {patient.disease_symptoms}
-                        </p>
-                        <p>
-                          <strong>Duration:</strong> {patient.disease_duration}
-                        </p>
-                        <p>
-                          <strong>Old Reports Note:</strong>{" "}
-                          {patient.old_reports_note}
-                        </p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Cards with Toggle */}
-      <div className="grid gap-4 md:hidden">
-        {filteredList.map((patient) => (
-          <div
-            key={patient.id}
-            className="border rounded-lg p-4 shadow bg-white"
-          >
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-semibold text-blue-600">
-                {patient.name}
-              </h3>
-              <div className="flex gap-2">
+              >
+                <option value="">Select Doctor</option>
+                {doctors.map((doc) => (
+                  <option key={doc.id} value={doc.id}>
+                    {doc.name}
+                  </option>
+                ))}
+              </select>
+              {Object.keys(formData).map((key) => {
+                if (key === "doctor_id" || key === "clinic_id") return null;
+                return (
+                  <input
+                    key={key}
+                    name={key}
+                    value={formData[key] || ""}
+                    onChange={handleChange}
+                    placeholder={key.replace("_", " ")}
+                    className="border p-2 rounded w-full"
+                  />
+                );
+              })}
+              <div className="flex justify-end gap-2 mt-2">
                 <button
-                  onClick={() =>
-                    setExpandedId(expandedId === patient.id ? null : patient.id)
-                  }
-                  className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100"
                 >
-                  {expandedId === patient.id ? "Hide" : "Details"}
+                  Cancel
                 </button>
                 <button
-                  onClick={() => setDeletePatientData(patient)}
-                  className="bg-red-600 text-white px-2 py-1 flex  gap-2 rounded hover:bg-red-700 text-xs"
+                  type="submit"
+                  className="bg-green-500 text-white px-4 py-2 rounded"
                 >
-                   <Trash2 size={16} />
-                  Delete
+                  Add Patient
                 </button>
               </div>
-            </div>
+            </form>
+          </div>
+        </div>
+      )}
 
-            <div
-              className={`transition-all duration-300 overflow-hidden ${
-                expandedId === patient.id
-                  ? "max-h-[1000px] opacity-100"
-                  : "max-h-0 opacity-0"
-              }`}
-            >
-              <div className="mt-2 space-y-1 text-sm">
-                <p><strong>ID:</strong> {patient.id}</p>
-                <p><strong>Age:</strong> {patient.age}</p>
-                <p>
-                  <strong>Doctor:</strong>{" "}
+   {/* Loading Overlay */}
+{loading ? (
+  <div className="flex items-center justify-center h-[400px]">
+    <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5 "></span>
+    <span className="ml-2 md:text-2xl text-blue-600">Loading...</span>
+  </div>
+) : (
+  <>
+    {/* Patients List */}
+    <div className="bg-white rounded shadow p-4">
+      <div className="text-lg font-semibold border-b pb-2 mb-4">
+        Total Patients: {filteredList.length}
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-7 gap-4 px-6 py-3 border-b font-semibold text-gray-700 bg-white rounded-t-md">
+          <div>S.No</div>
+          <div>Name</div>
+          <div>Age</div>
+          <div>Doctor</div>
+          <div>Disease</div>
+          <div>City</div>
+          <div className="text-center">Actions</div>
+        </div>
+
+        <div className="flex flex-col py-6 gap-2 mt-2">
+          {currentData.length > 0 ? (
+            currentData.map((patient, index) => (
+              <div
+                key={patient.id}
+                className="grid grid-cols-7 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
+              >
+                <div>{(currentPage - 1) * itemsPerPage + index + 1}</div>
+                <div>{patient.name}</div>
+                <div>{patient.age}</div>
+                <div>
                   {patient.doctor_name ||
                     doctors.find(
                       (d) => Number(d.id) === Number(patient.doctor_id)
                     )?.name ||
                     "N/A"}
-                </p>
-                <p><strong>Address:</strong> {patient.address}</p>
-                <p><strong>City:</strong> {patient.city}</p>
-                <p><strong>Email:</strong> {patient.email}</p>
-                <p><strong>Phone:</strong> {patient.phone}</p>
-                <p><strong>Disease:</strong> {patient.disease}</p>
-                <p><strong>Symptoms:</strong> {patient.disease_symptoms}</p>
-                <p><strong>Duration:</strong> {patient.disease_duration}</p>
-                <p><strong>Reports Note:</strong> {patient.old_reports_note}</p>
+                </div>
+                <div>{patient.disease}</div>
+                <div>{patient.city}</div>
+
+                <div className="flex justify-center gap-2">
+                
+                  <button
+                    onClick={() => setDeletePatientData(patient)}
+                    className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    <Trash2 size={16} /> Delete
+                  </button>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="flex justify-center items-center h-20">
+              <p className="text-black">No patients found.</p>
             </div>
-          </div>
-        ))}
+          )}
+        </div>
       </div>
+
+      {/* Mobile View */}
+      <div className="md:hidden flex flex-col gap-4">
+        {currentData.length > 0 ? (
+          currentData.map((patient, index) => (
+            <div
+              key={patient.id}
+              className="border rounded-lg shadow p-4 bg-white"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold text-blue-600">
+                    {(currentPage - 1) * itemsPerPage + index + 1}. {patient.name}
+                  </p>
+                  <p className="text-gray-600 text-sm">{patient.city}</p>
+                </div>
+                <button
+                  onClick={() =>
+                    setExpandedId(expandedId === patient.id ? null : patient.id)
+                  }
+                  className={`transform transition-transform duration-300 ${
+                    expandedId === patient.id ? "rotate-180" : "rotate-0"
+                  }`}
+                >
+                  <ChevronDown size={20} />
+                </button>
+              </div>
+
+              {expandedId === patient.id && (
+                <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
+                  <p><span className="font-semibold">Age: </span>{patient.age}</p>
+                  <p>
+                    <span className="font-semibold">Doctor: </span>
+                    {patient.doctor_name ||
+                      doctors.find(
+                        (d) => Number(d.id) === Number(patient.doctor_id)
+                      )?.name ||
+                      "N/A"}
+                  </p>
+                  <p><span className="font-semibold">Disease: </span>{patient.disease}</p>
+                  <p><span className="font-semibold">Symptoms: </span>{patient.disease_symptoms}</p>
+                  <p><span className="font-semibold">Duration: </span>{patient.disease_duration}</p>
+                  <p><span className="font-semibold">Email: </span>{patient.email}</p>
+                  <p><span className="font-semibold">Phone: </span>{patient.phone}</p>
+                  <p><span className="font-semibold">Address: </span>{patient.address}</p>
+                  <p><span className="font-semibold">Old Reports: </span>{patient.old_reports_note}</p>
+
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => setDeletePatientData(patient)}
+                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      <Trash2 size={16} /> Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="flex items-center text-xl text-black">
+            No patients found.
+          </p>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(p) => setCurrentPage(p)}
+        />
+      )}
+    </div>
+  </>
+)}
+
 
       {/* Delete Confirmation */}
       {deletePatientData && (

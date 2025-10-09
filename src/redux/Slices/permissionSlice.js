@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const BASE_URL = "http://hospital.51development.shop/api";
+const BASE_URL = "https://hospital.51development.shop/api";
 const token = localStorage.getItem("token");
 const clinic_id = localStorage.getItem("clinic_id");
 

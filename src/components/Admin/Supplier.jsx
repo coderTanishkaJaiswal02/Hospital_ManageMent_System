@@ -160,6 +160,7 @@ const Supplier = () => {
       </div>
 
 
+       
         {/* Loading Overlay */}
       {loading ? (
         <div className="flex items-center justify-center h-[400px]">
@@ -305,7 +306,6 @@ const Supplier = () => {
         </div>
         </>
 )}  
-       
     {/* Confirm Delete Modal */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

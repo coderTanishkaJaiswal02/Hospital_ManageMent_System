@@ -8,17 +8,26 @@ import {
 } from "../../redux/Slices/MedicineSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Shield, ChevronDown, ChevronUp } from "lucide-react";
+import { Shield, ChevronDown, ChevronUp, Plus, Pen, Trash2, X, Edit } from "lucide-react";
+import Pagination from "../common/Pagination";
+import ToggleCell from "../common/ToggleCell";
+
+const Spinner = () => (
+  <div className="flex flex-col items-center justify-center py-20">
+    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+    <span className="text-blue-500 font-semibold text-lg">Loading...</span>
+  </div>
+);
 
 const Medicine = () => {
   const dispatch = useDispatch();
-  const { data, loading, error } = useSelector((state) => state.medicines);
+  const { data, loading } = useSelector((state) => state.medicines);
 
-  const [showAddForm, setShowAddForm] = useState(false);
   const [search, setSearch] = useState("");
   const [editMedicine, setEditMedicine] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, name: "" });
   const [expandedId, setExpandedId] = useState(null);
+  const [modalType, setModalType] = useState(null); // "add" or "edit"
 
   const initialFormData = {
     brand_name: "",
@@ -29,6 +38,10 @@ const Medicine = () => {
     total_quantity: "",
   };
   const [formData, setFormData] = useState(initialFormData);
+
+  // --- Pagination State ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     dispatch(fetchMedicines())
@@ -47,24 +60,15 @@ const Medicine = () => {
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
-    if (
-      !formData.brand_name.trim() ||
-      !formData.generic_name.trim() ||
-      !formData.form.trim() ||
-      !formData.strength.trim() ||
-      !formData.hsn_code.trim() ||
-      !formData.total_quantity.trim()
-    ) {
+    if (Object.values(formData).some((val) => !String(val).trim())) {
       return toast.error("Please fill all required fields");
     }
-
-    const payload = { ...formData, total_quantity: formData.total_quantity || "0" };
-    dispatch(insertMedicine(payload))
+    dispatch(insertMedicine(formData))
       .unwrap()
       .then(() => {
         toast.success("Medicine added successfully!");
         setFormData(initialFormData);
-        setShowAddForm(false);
+        setModalType(null);
         dispatch(fetchMedicines());
       })
       .catch(() => toast.error("Failed to add medicine!"));
@@ -72,23 +76,15 @@ const Medicine = () => {
 
   const handleUpdate = (e) => {
     e.preventDefault();
-    if (
-      !editMedicine.brand_name.trim() ||
-      !editMedicine.generic_name.trim() ||
-      !editMedicine.form.trim() ||
-      !editMedicine.strength.trim() ||
-      !editMedicine.hsn_code.trim() ||
-      !editMedicine.total_quantity.trim()
-    ) {
+    if (Object.values(editMedicine).some((val) => !String(val).trim())) {
       return toast.error("Please fill all required fields");
     }
-
-    const payload = { ...editMedicine, total_quantity: editMedicine.total_quantity || "0" };
-    dispatch(updateMedicine({ id: editMedicine.id, data: payload }))
+    dispatch(updateMedicine({ id: editMedicine.id, data: editMedicine }))
       .unwrap()
       .then(() => {
         toast.success("Medicine updated successfully!");
         setEditMedicine(null);
+        setModalType(null);
         dispatch(fetchMedicines());
       })
       .catch(() => toast.error("Failed to update medicine!"));
@@ -110,225 +106,275 @@ const Medicine = () => {
     med.brand_name.toLowerCase().includes(search.toLowerCase())
   );
 
-  return (
-    <div className="p-6 max-w-6xl mx-auto flex flex-col gap-6">
-      {/* Header */}
-      <div className="bg-blue-500 rounded px-8 py-6 flex flex-col gap-4">
-        <div className="flex items-start justify-between">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-blue-400 rounded-xl border border-blue-300 p-2">
-                <Shield size={28} color="white" />
-              </div>
-              <h2 className="text-2xl font-semibold text-white">Medicines</h2>
-            </div>
-            <p className="text-white text-sm mt-1">Manage all Medicines data</p>
-          </div>
-          <button
-            onClick={() => { setShowAddForm(!showAddForm); setEditMedicine(null); }}
-            className="bg-white text-blue-500 font-semibold px-6 py-3 rounded hover:bg-gray-100"
-          >
-            {showAddForm ? "Close Form" : "Add Medicine"}
-          </button>
-        </div>
+  // Pagination logic
+       const [searching, setSearching] = useState("");
+       const [page, setPage] = useState(1);
+       const limit =5;
+       const totalPages = Math.ceil(filteredMedicines.length / limit);
+       const startIndex = (page - 1) * limit;
+       const currentData =filteredMedicines.slice(startIndex, startIndex + limit);
+     
+       useEffect(() => {
+         setPage(1);
+       }, [searching]);
+  
 
-        <input
-          type="text"
-          placeholder="Search by Name..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-md border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white bg-white"
-        />
+  // Reset page on search
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  };
+
+  return (
+    <div className="-p-4 max-w-6xl mx-auto flex flex-col">
+      <ToastContainer position="top-right" autoClose={2000} />
+
+      {/* Header */}
+      <div className="bg-blue-500 rounded-t-xl px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-blue-400 rounded-xl border border-blue-300 p-2">
+              <Shield size={28} color="white" />
+            </div>
+            <h2 className="text-2xl font-semibold text-white">Medicines</h2>
+          </div>
+          <p className="text-white text-sm mb-2">Manage all medicines data</p>
+          <input
+            type="text"
+            placeholder="Search by Brand Name..."
+            value={search}
+            onChange={handleSearch}
+            className="w-full max-w-lg border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white bg-white text-black"
+          />
+        </div>
+        <button
+          onClick={() => { setModalType("add"); setEditMedicine(null); }}
+          className="bg-white text-blue-500 font-semibold px-4 py-2 rounded hover:shadow-lg transition-shadow duration-300 flex items-center gap-2 -mt-2"
+        >
+          <Plus className="w-4 h-4" /> Add Medicine
+        </button>
       </div>
 
-      {/* Total Medicines */}
-      <div className="text-gray-700 font-semibold">Total Medicines: {filteredMedicines.length}</div>
+      {/* Loading or Medicines */}
+     {/* Loading Overlay */}
+{loading ? (
+  <div className="flex items-center justify-center h-[400px]">
+    <span className="animate-spin border-2 border-blue-500 border-t-transparent rounded-full w-5 h-5"></span>
+    <span className="ml-2 md:text-2xl text-blue-600">Loading...</span>
+  </div>
+) : (
+  <>
+    {/* Medicines List */}
+    <div className="bg-white rounded rounded-t-none shadow p-4">
+      <div className="text-lg font-semibold border-b pb-2 mb-4">
+        Total Medicines: {filteredMedicines.length}
+      </div>
 
-      {/* Add Form */}
-      {showAddForm && !editMedicine && (
-        <form onSubmit={handleAddSubmit} className="bg-white p-6 rounded shadow flex flex-col gap-4">
-          {["brand_name", "generic_name", "form", "strength", "hsn_code", "total_quantity"].map((field) => (
-            <input
-              key={field}
-              type="text"
-              name={field}
-              placeholder={field.replace("_", " ").toUpperCase()}
-              value={formData[field] ?? ""}
-              onChange={handleChange}
-              required
-              className="border p-2 rounded"
-            />
-          ))}
-          <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Add Medicine
-          </button>
-        </form>
-      )}
-
-      {/* Desktop Table */}
-      {!loading && filteredMedicines.length > 0 && (
-        <div className="hidden md:block overflow-x-auto bg-white shadow rounded">
-          <table className="min-w-full table-auto border-collapse">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-2 text-left">Total Qty</th>
-                <th className="px-4 py-2 text-left">ID</th>
-                <th className="px-4 py-2 text-left">Brand Name</th>
-                <th className="px-4 py-2 text-left">Generic Name</th>
-                <th className="px-4 py-2 text-left">Form</th>
-                <th className="px-4 py-2 text-left">Strength</th>
-                <th className="px-4 py-2 text-left">HSN Code</th>
-                <th className="px-4 py-2 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredMedicines.map((med) => (
-                <React.Fragment key={med.id}>
-                  <tr className="border-t">
-                    <td className="px-4 py-2 font-medium">{med.total_quantity}</td>
-                    <td className="px-4 py-2">{med.id}</td>
-                    <td className="px-4 py-2">{med.brand_name}</td>
-                    <td className="px-4 py-2">{med.generic_name}</td>
-                    <td className="px-4 py-2">{med.form}</td>
-                    <td className="px-4 py-2">{med.strength}</td>
-                    <td className="px-4 py-2">{med.hsn_code}</td>
-                    <td className="px-4 py-2 flex gap-2">
-                      <button
-                        onClick={() => { setEditMedicine(med); setShowAddForm(false); }}
-                        className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(med.id, med.brand_name)}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-
-                  {editMedicine?.id === med.id && (
-                    <tr>
-                      <td colSpan="8" className="px-4 py-2 bg-gray-50">
-                        <form onSubmit={handleUpdate} className="flex flex-col gap-2">
-                          {["brand_name", "generic_name", "form", "strength", "hsn_code", "total_quantity"].map((field) => (
-                            <input
-                              key={field}
-                              type="text"
-                              name={field}
-                              value={editMedicine[field] ?? ""}
-                              onChange={handleChange}
-                              className="border p-2 rounded w-full"
-                              required
-                            />
-                          ))}
-                          <div className="flex gap-2 mt-2">
-                            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                              Update
-                            </button>
-                            <button type="button" onClick={() => setEditMedicine(null)} className="bg-gray-300 px-4 py-2 rounded">
-                              Cancel
-                            </button>
-                          </div>
-                        </form>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+      {/* Desktop View */}
+      <div className="hidden md:block">
+        {/* Header Row */}
+        <div className="grid grid-cols-8 gap-4 px-6 py-3 border-b font-semibold text-gray-700 bg-white rounded-t-md">
+          <div>S.No</div>
+          <div>Total Qty</div>
+          <div>Brand Name</div>
+          <div>Generic Name</div>
+          <div>Form</div>
+          <div>Strength</div>
+          <div>HSN Code</div>
+          <div className="text-center">Actions</div>
         </div>
-      )}
 
-      {/* Mobile Cards */}
-      <div className="md:hidden grid grid-cols-1 gap-4">
-        {filteredMedicines.map((med) => (
-          <div key={med.id} className="border rounded-lg p-4 shadow bg-white flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-blue-600">
-                {med.brand_name} - {med.form} ({med.strength})
-              </h3>
-              <button
-                onClick={() => setExpandedId(expandedId === med.id ? null : med.id)}
-                className="p-1"
+        {/* Data Rows */}
+        <div className="flex flex-col py-6 gap-2 mt-2">
+          {currentData.length > 0 ? (
+            currentData.map((med, index) => (
+              <div
+                key={med.id}
+                className="grid grid-cols-8 gap-2 px-6 py-4 border-b rounded-lg shadow-sm bg-white hover:shadow-md hover:bg-gray-50 transition"
               >
-                {expandedId === med.id ? <ChevronUp /> : <ChevronDown />}
-              </button>
-            </div>
-            <p className="text-gray-700 font-medium">Total Qty: {med.total_quantity}</p>
+                <div>{(currentPage - 1) * itemsPerPage + index + 1}</div>
+                <div>{med.total_quantity}</div>
+                <div>
+                  <ToggleCell text={med.brand_name} limit={15} />
+                </div>
+                <div>
+                  <ToggleCell text={med.generic_name} limit={15} />
+                </div>
+                <div>{med.form}</div>
+                <div>{med.strength}</div>
+                <div>{med.hsn_code}</div>
 
-            {expandedId === med.id && (
-              <div className="mt-2 text-sm space-y-1">
-                <p>ID: {med.id}</p>
-                <p>Generic Name: {med.generic_name}</p>
-                <p>HSN Code: {med.hsn_code}</p>
-              </div>
-            )}
-
-            <div className="flex justify-end gap-2 mt-2">
-              <button
-                onClick={() => { setEditMedicine(med); setShowAddForm(false); }}
-                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDeleteClick(med.id, med.brand_name)}
-                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
-            </div>
-
-            {editMedicine?.id === med.id && (
-              <form onSubmit={handleUpdate} className="flex flex-col gap-2 mt-2">
-                {["brand_name", "generic_name", "form", "strength", "hsn_code", "total_quantity"].map((field) => (
-                  <input
-                    key={field}
-                    type="text"
-                    name={field}
-                    value={editMedicine[field] ?? ""}
-                    onChange={handleChange}
-                    className="border p-2 rounded w-full"
-                    required
-                  />
-                ))}
-                <div className="flex gap-2 mt-2">
-                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    Update
+                <div className="flex justify-center gap-2">
+                  <button
+                    onClick={() => {
+                      setEditMedicine(med);
+                      setModalType("edit");
+                    }}
+                    className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    <Pen size={18} /> Edit
                   </button>
-                  <button type="button" onClick={() => setEditMedicine(null)} className="bg-gray-300 px-4 py-2 rounded">
-                    Cancel
+                  <button
+                    onClick={() => handleDeleteClick(med.id, med.brand_name)}
+                    className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    <Trash2 size={18} /> Delete
                   </button>
                 </div>
-              </form>
-            )}
-          </div>
-        ))}
+              </div>
+            ))
+          ) : (
+            <div className="flex justify-center items-center">
+              <p className="text-black">No medicines found.</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Mobile View */}
+      <div className="md:hidden flex flex-col gap-4">
+        {currentData.length > 0 ? (
+          currentData.map((med, index) => (
+            <div
+              key={med.id}
+              className="border rounded-lg shadow p-4 bg-white"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold text-black">
+                    {(currentPage - 1) * itemsPerPage + index + 1}.{" "}
+                    {med.brand_name}
+                  </p>
+                  <p className="text-gray-600 text-sm">
+                    Form: {med.form} | Qty: {med.total_quantity}
+                  </p>
+                </div>
+
+                {/* Expand toggle */}
+                <button
+                  onClick={() =>
+                    setExpandedId(expandedId === med.id ? null : med.id)
+                  }
+                  className={`transform transition-transform duration-300 ${
+                    expandedId === med.id ? "rotate-180" : "rotate-0"
+                  }`}
+                >
+                  <ChevronDown size={20} />
+                </button>
+              </div>
+
+              {expandedId === med.id && (
+                <div className="mt-3 border-t pt-3 text-sm text-gray-700 space-y-2">
+                  <p>
+                    <span className="font-semibold">Generic Name:</span>{" "}
+                    {med.generic_name}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Strength:</span>{" "}
+                    {med.strength}
+                  </p>
+                  <p>
+                    <span className="font-semibold">HSN Code:</span>{" "}
+                    {med.hsn_code}
+                  </p>
+
+                  <div className="flex gap-2 mt-2 justify-end">
+                    <button
+                      onClick={() => {
+                        setEditMedicine(med);
+                        setModalType("edit");
+                      }}
+                      className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                    >
+                      <Edit size={16} /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(med.id, med.brand_name)}
+                      className="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      <Trash2 size={16} /> Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="flex items-center text-xl text-black">
+            No medicines found.
+          </p>
+        )}
+      </div>
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(p) => setCurrentPage(p)}
+      />
+    </div>
+  </>
+)}
+
+
+      {/* Add/Edit Modal */}
+      {(modalType === "add" || modalType === "edit") && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-md w-full relative">
+            <button
+              onClick={() => { setModalType(null); setEditMedicine(null); }}
+              className="absolute top-3 right-3 p-1 rounded hover:bg-gray-200"
+            >
+              <X />
+            </button>
+            <h2 className="text-xl font-semibold mb-4">{modalType === "add" ? "Add Medicine" : "Edit Medicine"}</h2>
+            <form onSubmit={modalType === "add" ? handleAddSubmit : handleUpdate} className="flex flex-col gap-3">
+              {["brand_name", "generic_name", "form", "strength", "hsn_code", "total_quantity"].map((field) => (
+                <input
+                  key={field}
+                  type="text"
+                  name={field}
+                  placeholder={field.replace("_", " ").toUpperCase()}
+                  value={(modalType === "add" ? formData : editMedicine)[field] ?? ""}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-full"
+                  required
+                />
+              ))}
+              <div className="flex justify-end gap-2 mt-2">
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  {modalType === "add" ? "Add" : "Update"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setModalType(null); setEditMedicine(null); }}
+                  className="bg-gray-300 px-4 py-2 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Delete Modal */}
       {deleteModal.open && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full text-center">
-            <p className="mb-4 text-lg">
-              Are you sure you want to delete <strong>{deleteModal.name}</strong>?
-            </p>
+            <p className="mb-4 text-lg">Are you sure you want to delete <strong>{deleteModal.name}</strong>?</p>
             <div className="flex justify-center gap-4">
-              <button onClick={confirmDelete} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                Delete
+              <button onClick={confirmDelete} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-1">
+                <Trash2 className="w-4 h-4" /> Delete
               </button>
-              <button onClick={cancelDelete} className="bg-gray-300 px-4 py-2 rounded">
-                Cancel
-              </button>
+              <button onClick={cancelDelete} className="bg-gray-300 px-4 py-2 rounded">Cancel</button>
             </div>
           </div>
         </div>
       )}
-
-      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 };
